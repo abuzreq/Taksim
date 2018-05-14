@@ -1,5 +1,6 @@
 package asp4j.solver;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -12,37 +13,50 @@ import org.apache.commons.io.IOUtils;
  */
 public class SolverClingo extends SolverBase {
 
+	private int numModels;
+	public SolverClingo(int numModels)
+	{
+		this.numModels = numModels;
+	}
     @Override
     protected String solverCommand() {
-        return "clingo 1 --verbose=0";
+        return "clingo "+numModels+" --verbose=0";
     }
 
-    
-    protected List<String> getAnswerSetStrings2(Process exec) throws IOException {
+    static int n = 0;
+    protected List<String> getAnswerSetStrings(Process exec) throws IOException {
         InputStream inputStream = exec.getInputStream();
         List<String> allLines = IOUtils.readLines(inputStream);
         List<String> answerSetLines = new ArrayList<>();
-        for (String line : allLines) {
-            if (line.startsWith("%") || line.startsWith("SATISFIABLE")) {
+        for (String line : allLines) 
+        {
+            if (line.startsWith("%") || line.startsWith("SATISFIABLE")|| line.contains("Optimization")|| line.contains("OPTIMUM") || line.contains("FOUND")) {
                 continue;
             }
-            answerSetLines.add(line);
+            answerSetLines.add(line);  
         }
-        return answerSetLines;
+        //Take the last answer set result, in case of optimizaion there can be many different ones, last is optimal or most optimal
+        String[] lastLineWords = answerSetLines.get(answerSetLines.size()-1).split(" ");
+        
+        List<String> tmp = new ArrayList<>();
+        for (String word : lastLineWords)
+        {
+        	tmp.add(word);
+        }
+        return tmp;
     }
-    @Override
-    protected List<String> getAnswerSetStrings(Process exec) throws IOException
+    protected List<String> getAnswerSetStrings2(Process exec) throws IOException
     {
         InputStream inputStream = exec.getInputStream();
+        System.out.println(" haha "+convertInputStreamToString(inputStream));
         String[] allLines = convertInputStreamToString(inputStream).split(" ");
         List<String> answerSetLines = new ArrayList<>();
         for (String line : allLines) {
-            if (line.startsWith("%") || line.contains("SATISFIABLE")) {
+            if (line.startsWith("%") || line.contains("SATISFIABLE") ) {
                 continue;
             }
             answerSetLines.add(line);
         }
-        System.out.println(answerSetLines);
         return answerSetLines;
     }
     static String convertInputStreamToString(java.io.InputStream is) {

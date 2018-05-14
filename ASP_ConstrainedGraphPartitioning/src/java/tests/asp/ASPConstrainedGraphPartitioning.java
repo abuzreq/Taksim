@@ -22,18 +22,23 @@ public class ASPConstrainedGraphPartitioning
 {
 	private final static String rulefile_main = System.getProperty("user.dir") + "/src/java/tests/files/partition.lp";
 
-	private String edgesFile,constraintsFile;
-	public ASPConstrainedGraphPartitioning(String edgesFile,String constraintsFile,int numNodes,int numPartitions)
+	private String[] extraRuleFiles;
+	private boolean allowNodeRemoval;
+	private int timeLimit,numModels;
+	
+	public ASPConstrainedGraphPartitioning(int numNodes,int numPartitions, boolean allowNodeRemoval, int timeLimit, int numModels,String...rulefiles)
 	{
-		this.edgesFile = edgesFile;
-		this.constraintsFile = constraintsFile;
+		this.extraRuleFiles = rulefiles;
 		this.numNodes = numNodes;
 		this.numPartitions = numPartitions;
+		this.allowNodeRemoval = allowNodeRemoval;
+		this.timeLimit = timeLimit;
+		this.numModels = numModels;
 	}
 	public List<String> getAnswerSet()
 	{
 		try {
-			return getAnswerSet(new SolverClingo(), rulefile_main,edgesFile,constraintsFile);
+			return getAnswerSet(new SolverClingo(numModels), rulefile_main,extraRuleFiles);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -43,12 +48,14 @@ public class ASPConstrainedGraphPartitioning
 	
 	private int numNodes ;
 	private int numPartitions;
-	public List<String> getAnswerSet(SolverBase externalSolver, String... rulefiles) throws Exception 
+	private List<String> getAnswerSet(SolverBase externalSolver,String mainRuleFile, String[] extraRuleFiles) throws Exception 
 	{
 		ObjectSolverImpl solver = new ObjectSolverImpl(externalSolver);
-		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5");
+		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit);//+" -t 4,compete"
 		ProgramBuilder<Object> pb = new ProgramBuilder<>();
-		for(String rulefile : rulefiles)
+		
+		pb.add(new File(mainRuleFile));
+		for(String rulefile : extraRuleFiles)
 		{
 			pb.add(new File(rulefile));
 		}

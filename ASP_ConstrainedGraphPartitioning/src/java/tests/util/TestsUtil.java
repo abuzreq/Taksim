@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import org.jgrapht.graph.SimpleGraph;
 
+import examples.GridGenerator.CellNode;
 import examples.VoronoiGenerator.FaceNode;
 import search.basic.Border;
 import search.basic.GraphPartitioningState;
@@ -75,6 +76,11 @@ public class TestsUtil
 				{
 					FaceNode fn = (FaceNode)arr.get(k);
 					fn.face.color = color;	
+				}
+				else if(arr.get(k) instanceof CellNode) // FaceNode extends Node and is the result of the VoronoiBuilder generator
+				{
+					CellNode fn = (CellNode)arr.get(k);
+					fn.cell.color = color;	
 				}
 			}				
 		}	

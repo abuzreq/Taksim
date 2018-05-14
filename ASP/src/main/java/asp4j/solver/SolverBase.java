@@ -77,6 +77,7 @@ public abstract class SolverBase implements Solver {
         preSolverExec(program);
         try {
             Process exec = Runtime.getRuntime().exec(solverCallString(program));
+            //exec.waitFor();
             List<String> answerSetStrings = getAnswerSetStrings(exec);
             postSolverExec(program);
             return  Collections.unmodifiableList(answerSetStrings);
@@ -93,12 +94,11 @@ public abstract class SolverBase implements Solver {
         preSolverExec(program);
         try {
             Process exec = Runtime.getRuntime().exec(solverCallString(program));
-            //System.out.println(convertInputStreamToString(exec.getErrorStream()));
-            //System.out.println(convertInputStreamToString(exec.getInputStream()));
             List<String> answerSetStrings = getAnswerSetStrings(exec);
             postSolverExec(program);
             return lastProgramAnswerSets = Collections.unmodifiableList(mapAnswerSetStrings(answerSetStrings));
-        } catch (IOException | ParseException e) {
+        } catch (IOException | ParseException e)
+        {
           throw new SolverException(e);
         } 
     }

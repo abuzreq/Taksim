@@ -11,13 +11,16 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jgrapht.EdgeFactory;
 import org.jgrapht.Graph;
 import org.jgrapht.GraphPath;
+import org.jgrapht.VertexFactory;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.alg.NeighborIndex;
 import org.jgrapht.alg.isomorphism.IsomorphicGraphMapping;
 import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector;
 import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
+import org.jgrapht.generate.GridGraphGenerator;
 import org.jgrapht.graph.ListenableUndirectedGraph;
 import org.jgrapht.graph.SimpleGraph;
 
@@ -385,7 +388,7 @@ public class GraphUtil
 	 * Obtaines a graph partitioning of the passed graph using the algorithm described in:
 	 * "Luh Yen, Francois Fouss, Christine Decaestecker, Pascal Francq, and Marco Saerens. 2007. 
 		 Graph Nodes Clustering Based on the Commute-Time Kernel. Springer Berlin Heidelberg, Berlin, Heidelberg,
-		 1037–1045. https://doi.org/10.1007/978-3-540-71701-0_117"
+		 1037ï¿½1045. https://doi.org/10.1007/978-3-540-71701-0_117"
 		 and implemented by https://github.com/trickl/trickl-graph
 	 * @param graph
 	 * @param numPartitions
@@ -438,7 +441,37 @@ public class GraphUtil
 		}
 		return null;
 	}
-	
+	public static SimpleGraph<Node,Border> generateBasicGridGraph(int n)
+	{
+		VertexFactory<Node> vf = new VertexFactory<Node>()
+		{
+			int num = -1;
+			@Override
+			public Node createVertex() 
+			{
+				num++;
+				return new Node(num);
+			}
+		};
+		EdgeFactory<Node,Border> bf =  new EdgeFactory<Node,Border>()
+		{
+
+			@Override
+			public Border createEdge(Node sourceVertex, Node targetVertex)
+			{
+				Border b = new Border(sourceVertex,targetVertex);
+				return b;
+			}
+			
+		};
+		
+		SimpleGraph<Node,Border> G = new SimpleGraph<Node,Border>(bf);
+		GridGraphGenerator<Node,Border> gg = new GridGraphGenerator<Node,Border>(n, n);
+		gg.generateGraph(G, vf,null);
+		
+		return G;
+	}
+
 	public static GraphPartitioningState generateChainGraph(int n) 
 	{	
 		GraphPartitioningState graph = new GraphPartitioningState();
