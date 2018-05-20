@@ -193,8 +193,7 @@ public class GridGenerator implements BasicGraphGenerator
 	}
 	public void setupGenerator( int cellDim) 
 	{
-		this.cellDim  = cellDim;
-		
+		this.cellDim  = cellDim;	
 	}
 
 	public void startDrawing(SimpleGraph<Node,Border> G, boolean drawText) 

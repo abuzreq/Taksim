@@ -136,8 +136,7 @@ public class ASPTest
 		writeConstraintGraphToFile(C,rulefile_constraints);
 		writeNodeInPartitionConstraintsToFile(node2par,rulefile_node_constraints);
 
-		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels,
-				rulefile_edges, rulefile_constraints);
+		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels);
 		GraphPartitioningState result = asp.partition();
 		System.out.println(result);
 		TestsUtil.colorizeRandom(result,Color.WHITE);
