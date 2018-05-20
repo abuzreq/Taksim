@@ -1,8 +1,11 @@
 package search.basic;
 
+import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.DefaultEdge;
 
-public class PartitionBorder extends DefaultEdge implements Comparable<PartitionBorder> {
+public class PartitionBorder extends DefaultEdge implements Comparable<PartitionBorder>,EdgeFactory<Partition, PartitionBorder> 
+{
+
 	private Partition p1, p2;
 
 	public Partition getP1() {
@@ -36,5 +39,12 @@ public class PartitionBorder extends DefaultEdge implements Comparable<Partition
 
 	public String toString() {
 		return "<PB " + p1 + " <#> " + p2 + ">";
+	}
+
+	@Override
+	public PartitionBorder createEdge(Partition sourceVertex, Partition targetVertex) 
+	{
+		PartitionBorder b = new PartitionBorder(sourceVertex,targetVertex);
+		return b;
 	}
 }

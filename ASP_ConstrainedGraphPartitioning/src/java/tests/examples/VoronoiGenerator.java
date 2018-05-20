@@ -206,7 +206,7 @@ public class VoronoiGenerator implements BasicGraphGenerator
 	
 	
 	
-	
+	Random rd = new Random();
 	/***********************************************************/
 	 void buildNoisyEdges(PApplet ap)
 	{
@@ -1302,6 +1302,16 @@ public class VoronoiGenerator implements BasicGraphGenerator
 			ArrayList<Face> neighbours;
 			ArrayList<Edge> edges;
 			ArrayList<Point> points;
+
+			public ArrayList<PVector> getPoints() 
+			{
+				ArrayList<PVector> coords = new ArrayList<>();
+				for(int i =0 ; i < points.size();i++)
+				{
+					coords.add(points.get(i).pos);
+				}
+				return coords;
+			}
 
 			Face() {
 				neighbours = new ArrayList<Face>();

@@ -2,20 +2,25 @@ package asp;
 
 import java.awt.Color;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.jgrapht.EdgeFactory;
+import org.jgrapht.VertexFactory;
+import org.jgrapht.generate.GnmRandomGraphGenerator;
 import org.jgrapht.graph.SimpleGraph;
 
 import examples.GridGenerator;
-import examples.GridGeneratorDrawer;
-import examples.VoronoiGenerator;
-import processing.core.PApplet;
 import search.basic.Border;
 import search.basic.GraphPartitioningState;
 import search.basic.Node;
@@ -32,7 +37,7 @@ public class ASPTest2
 	static int afterCoarseningSize = -1;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(1234);
-	static int timeLimit = 60;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
+	static int timeLimit = 0;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
 	static int numModels = 1;  
 	
 	static boolean drawText = true;
@@ -40,30 +45,77 @@ public class ASPTest2
 	private final static String rulefile_edges = System.getProperty("user.dir") + "/src/java/tests/files/edges.lp";
 	private final static String rulefile_adjacency_constraints = System.getProperty("user.dir") + "/src/java/tests/files/adjacency_constraints.lp";
 	private final static String rulefile_node_constraints = System.getProperty("user.dir") + "/src/java/tests/files/node_constraints.lp";
-	private final static String rulefile_partitions_size_max = System.getProperty("user.dir") + "/src/java/tests/files/size_max.lp";
+	private final static String rulefile_partitions_size_opt = System.getProperty("user.dir") + "/src/java/tests/files/size_opt.lp";
+	private static EdgeFactory<Partition,PartitionBorder> bf =  new EdgeFactory<Partition,PartitionBorder>()
+	{
 
+		@Override
+		public PartitionBorder createEdge(Partition sourceVertex, Partition targetVertex)
+		{
+			PartitionBorder b = new PartitionBorder(sourceVertex,targetVertex);
+			return b;
+		}
+		
+	};
+	private static VertexFactory<Partition> vf = new VertexFactory<Partition>() {
+		int n = 0;
+		@Override
+		public Partition createVertex() {
+			Partition par = new Partition(n);
+			n++;
+			return par;
+		}};
 	public static void main(String[] args) 
 	{
 		GridGenerator generator = new GridGenerator();
 		generator.setupGenerator(50);
-		SimpleGraph<Node,Border> G = generator.generate(8,rand);
-
+		SimpleGraph<Node,Border> G = generator.generate(7,rand);
 		
 		//Generating the constrain graph
-		final GraphPartitioningState C  = GraphUtil.generateChainGraph(4);
-		String filePath = ""; 
-		//final GraphPartitioningState C  = getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
-				
-		
+		//final GraphPartitioningState C  = GraphUtil.generateChainGraph(3);
+		String filePath = "/home/abuzreq/eclipse-workspace/ASP-All/ASP_ConstrainedGraphPartitioning/src/java/tests/test_graphs/tree3.in"; 
+		//final GraphPartitioningState C  = getC();//TestsUtil.readConstraintGraphs(filePath).get(0);// getC();
+		SimpleGraph<Partition,PartitionBorder> Cc  = new SimpleGraph<Partition,PartitionBorder>(bf);//GraphUtil.generateChainGraph(8);
+		GnmRandomGraphGenerator<Partition,PartitionBorder> gen = new GnmRandomGraphGenerator<>(4, 3);
+		gen.generateGraph(Cc, vf, null);
+		System.out.println(Cc);
+		GraphPartitioningState C = new GraphPartitioningState();
+		Partition[] pars = GraphUtil.getPartitions(Cc);
+		for(int i =0 ; i <  pars.length;i++ )
+		{
+			C.addVertex(pars[i]);
+		}
+		for(PartitionBorder pb: Cc.edgeSet())
+		{
+			//PartitionBorder b = new PartitionBorder(pars[pb.getP1().getNumber()-1], pars[pb.getP2().getNumber()-1]);
+			//C.addEdge(pars[pb.getP1().getNumber()-1],pars[pb.getP2().getNumber()-1],b);
+			C.addEdge(pb.getP1(), pb.getP2(),pb);
+		}
+		System.out.println(C);
+		C = GraphUtil.generateChainGraph(10);//getC();//
 		if(afterCoarseningSize != -1)
+		{
 			G = GraphUtil.partitionToNodeGraph(GraphUtil.partition(G, afterCoarseningSize, PartitioningType.KERNEL_DETERMINISTIC,rand,true));
+			//G = GraphUtil.partitionToNodeGraph(GraphUtil.partition(G, afterCoarseningSize/2, PartitioningType.KMEANS_STOCHASTIC,rand,true));
+		}
 		
+		int numPartitions = GraphUtil.sizeOf(C);
 		System.out.println("# of Nodes = "+GraphUtil.sizeOf(G));
+		System.out.println("# of Pars = "+numPartitions);
 		
+		Node[] nodes = GraphUtil.getNodes(G);
+		ArrayList<Node> start = new ArrayList<>();
+		start.add(nodes[0]);
+		start.add(nodes[1]);
+
+		
+		//Object[] objs = groupNodes(G,start);
+		//G = (SimpleGraph<Node, Border>) objs[0];
+		//Node startNode = (Node) objs[1];
 		
 		Map<Integer,Integer> node2par = new HashMap<>();
-		node2par.put(0, 1);
-		node2par.put(1, 1);
+		//node2par.put(startNode.getValue(), 1);
+		//node2par.put(1, 1);
 		/*
 		node2par.put(2, 1);
 		node2par.put(3, 1);
@@ -75,81 +127,88 @@ public class ASPTest2
 		node2par.put(9, 1);
 		node2par.put(10, 1);
 		*/
+		//node(0..n-1).
+		//Map<Integer,Integer[]> par2nodes = new HashMap<>();
+		//par2nodes.put(1, new Integer[] {1,2});
+		System.out.println(G);
+		Border[] bors = GraphUtil.getBorders(G);
+		for(Border b : bors)
+		{
+			//System.out.println(b.getN1().getValue() + " "+b.getN2().getValue());
+		}
 		
-		Map<Integer,Integer[]> par2nodes = new HashMap<>();
-		par2nodes.put(1, new Integer[] {1,2});
 
-		
 		writeBasicGraphToFile(G,rulefile_edges);
 		writeConstraintGraphToFile(C,rulefile_adjacency_constraints);
 		writeNodeInPartitionConstraintsToFile(node2par,rulefile_node_constraints);
 		
-		OptType[] optTypes = {OptType.MAX,OptType.MAX,OptType.MAX,OptType.MAX};
-		writePartitionsMaximizationsToFile(range(1,4),optTypes,ones(4),rulefile_partitions_size_max);
+		OptType[] optTypes = {OptType.MAX,OptType.MAX,OptType.MAX,OptType.MAX,OptType.MAX,OptType.MAX,OptType.MAX,OptType.MAX};
+		OptType[] optTypes2 = {OptType.MIN,OptType.MIN,OptType.MIN,OptType.MIN,OptType.MIN,OptType.MIN,OptType.MIN,OptType.MIN};
+		//writePartitionsSizeOptimizationToFile(range(1,numPartitions),optTypes,constant(numPartitions,1),rulefile_partitions_size_opt);
 		
-		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(GraphUtil.sizeOf(G),GraphUtil.sizeOf(C),
-				allowNodeRemoval,timeLimit,numModels,rulefile_edges, rulefile_adjacency_constraints,rulefile_node_constraints,rulefile_partitions_size_max);
-		List<String> answerSet = asp.getAnswerSet();
-		if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
-		{
-			System.out.println("No solution was found or time limit reached before a solution is found.");
-			System.exit(0);
-		}
-		GraphPartitioningState result = buildPartitioning(answerSet,G,C);
-		System.out.println(result);
-		//PApplet.main("examples.GridGeneratorDrawer");
-		System.out.println("1");
+		
+		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels,
+				rulefile_edges, rulefile_adjacency_constraints,rulefile_node_constraints,rulefile_partitions_size_opt);
 
-		generator.startDrawing(G,drawText);
-		
+		GraphPartitioningState result  = asp.partition();
+
+
+		generator.startDrawing(G,drawText);		
 		TestsUtil.colorizeRandom(result,Color.WHITE);
 	}
 
 
-
-
-	private static GraphPartitioningState buildPartitioning(List<String> answerSet, SimpleGraph<Node, Border> G, SimpleGraph<Partition,PartitionBorder> C) 
+	static int formNumber(ArrayList<Node> nodes)
 	{
-		int numPartitions = GraphUtil.sizeOf(C);
-		Node[] nodes = GraphUtil.getNodes(G);
-		Arrays.sort(nodes);		
-		GraphPartitioningState Q =  new GraphPartitioningState();
-		Partition[] pars = new Partition[numPartitions];
-		for(int i =0 ; i < pars.length;i++)
-		{
-			pars[i] = new Partition(i+1);
- 		}
-		System.out.println(answerSet);
-		ListIterator<String> it = answerSet.listIterator();
-		int num = 0;
-		while(it.hasNext())
-		{
-			String ans = it.next();
-			if(ans.startsWith("contains"))
-			{
-				int in = ans.indexOf(",");
-				int left = ans.indexOf("(");
-				int right = ans.indexOf(")");
-				int parNumber = Integer.parseInt(ans.substring(left+1,in));
-				int nodeIndex = Integer.parseInt(ans.substring(in+1,right));
-				if(parNumber == 0)
-				{
-					Q.addToRemoved(nodes[nodeIndex]);
-				}
-				else
-				{
-					pars[parNumber-1].addMember(nodes[nodeIndex]);
-				}
-				num += 1;
+		Comparator<Node> comp = new Comparator<Node>() {
+			
+			@Override
+			public int compare(Node o1, Node o2) {
+				// TODO Auto-generated method stub
+				return o2.getValue() - o1.getValue();
 			}
-		}
-		for(int i =0 ; i < pars.length;i++)
+		};
+		Collections.sort(nodes, comp);
+		return nodes.get(0).getValue();
+		/*
+		for(int i =0 ; i < nodes.size();i++)
 		{
-			Q.addVertex(pars[i]);
+			str += nodes.get(i).getValue();
 		}
-		GraphUtil.buildQuotientGraph(Q, G);
-		return Q;
+		return Integer.parseInt(str+"00");
+		*/
 	}
+	private static Object[] groupNodes(SimpleGraph<Node,Border> G, ArrayList<Node> nodes)
+	{
+		int num = formNumber(nodes);
+		
+		Node parent = new Node(num);
+		parent.setCluster(nodes);
+		List<Border> edges = new LinkedList<Border>();
+		for(int i = 0 ; i < nodes.size();i++)
+		{
+			Set<Border> eds = GraphUtil.getEdgesOf(G, nodes.get(i));
+			for(Border e : eds)
+			{
+				boolean n1 = nodes.contains(e.getN1());
+				boolean n2 = nodes.contains(e.getN2());
+				if(n1 && n2)
+					continue;
+				Border b = new Border(n1?e.getN2():parent,n2?e.getN1():parent);
+				edges.add(b);
+			}			
+		}
+		G.removeAllVertices(nodes);
+		G.addVertex(parent);
+		for(int i = 0 ; i < edges.size();i++)
+		{
+			Border e = edges.get(i);
+			G.addEdge(e.getN1(), e.getN2(),e);
+		}
+		return new Object[] {G,parent};
+	}
+	
+	
 	private static int[] range(int l,int u)
 	{
 		int[] arr = new int[u-l+1];
@@ -159,12 +218,12 @@ public class ASPTest2
 		}
 		return arr;
 	}
-	private static int[] ones(int n)
+	private static int[] constant(int n,int constant)
 	{
 		int[] arr = new int[n];
 		for(int i = 0 ; i < arr.length;i++)
 		{
-			arr[i] = 1;
+			arr[i] = constant;
 		}
 		return arr;
 	}
@@ -180,7 +239,7 @@ public class ASPTest2
 	 *  (i.e. a priority of 5 for a maximization statemnt is only higher than other maximization statments)
 	 * @param rulefile
 	 */
-	private static void writePartitionsMaximizationsToFile(int[] pars,OptType[] opt,int[] priorities, String rulefile) 
+	private static void writePartitionsSizeOptimizationToFile(int[] pars,OptType[] opt,int[] priorities, String rulefile) 
 	{
 		//#maximize {N@priority_i: belongs(N,P),node(N),P==i}. 
 
@@ -266,10 +325,24 @@ public class ASPTest2
 	private static void writeBasicGraphToFile(SimpleGraph<Node, Border> G, String rulefile) 
 	{
 		Border[] edges = GraphUtil.getBorders(G);
+		Node[] nodes = GraphUtil.getNodes(G);
 		try 
 		{	
 			FileWriter fw = new FileWriter(rulefile);
 			StringBuilder sb = new StringBuilder();
+			
+			sb.append("node(");
+			for (int i = 0; i < nodes.length; i++) 
+			{
+				
+				sb.append(nodes[i].getValue());
+				if(i < nodes.length-1)
+					sb.append(";");
+
+				
+			}
+			sb.append(").\n");
+			
 			for (int i = 0; i < edges.length; i++) 
 			{
 				sb.append("edge(");

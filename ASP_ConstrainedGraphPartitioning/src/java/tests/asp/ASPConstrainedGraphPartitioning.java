@@ -1,6 +1,11 @@
 package asp;
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+
+import org.jgrapht.graph.SimpleGraph;
 
 import asp4j.lang.AnswerSet;
 import asp4j.program.Program;
@@ -12,7 +17,12 @@ import asp4j.solver.object.Binding;
 import asp4j.solver.object.Filter;
 import asp4j.solver.object.ObjectSolver;
 import asp4j.solver.object.ObjectSolverImpl;
+import search.basic.Border;
 import search.basic.GraphPartitioningState;
+import search.basic.Node;
+import search.basic.Partition;
+import search.basic.PartitionBorder;
+import util.GraphUtil;
 
 /**
  *
@@ -25,17 +35,25 @@ public class ASPConstrainedGraphPartitioning
 	private String[] extraRuleFiles;
 	private boolean allowNodeRemoval;
 	private int timeLimit,numModels;
+
+	private SimpleGraph<Node, Border> G;
+
+	private GraphPartitioningState C;
 	
-	public ASPConstrainedGraphPartitioning(int numNodes,int numPartitions, boolean allowNodeRemoval, int timeLimit, int numModels,String...rulefiles)
+	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels,String...rulefiles)
 	{
 		this.extraRuleFiles = rulefiles;
-		this.numNodes = numNodes;
-		this.numPartitions = numPartitions;
+		this.G = G;
+		this.C = C;
+		
+		this.numNodes = GraphUtil.sizeOf(G);
+		this.numPartitions = GraphUtil.sizeOf(C);
+		
 		this.allowNodeRemoval = allowNodeRemoval;
 		this.timeLimit = timeLimit;
 		this.numModels = numModels;
 	}
-	public List<String> getAnswerSet()
+	private List<String> getAnswerSet()
 	{
 		try {
 			return getAnswerSet(new SolverClingo(numModels), rulefile_main,extraRuleFiles);
@@ -51,7 +69,7 @@ public class ASPConstrainedGraphPartitioning
 	private List<String> getAnswerSet(SolverBase externalSolver,String mainRuleFile, String[] extraRuleFiles) throws Exception 
 	{
 		ObjectSolverImpl solver = new ObjectSolverImpl(externalSolver);
-		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit);//+" -t 4,compete"
+		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit +" -t 4,split");//+
 		ProgramBuilder<Object> pb = new ProgramBuilder<>();
 		
 		pb.add(new File(mainRuleFile));
@@ -63,7 +81,7 @@ public class ASPConstrainedGraphPartitioning
 		
 		Program<Object> program = pb.build();
 		
-		Class[] classes = {String.class,Node.class,Edge.class,Reach.class,Belongs.class,Contains.class,Contagious.class,Family.class,Partition.class,QuotientEdge.class};
+		Class[] classes = {String.class,Node.class,Edge.class,Reach.class,Belongs.class,Contains.class,Contiguous.class,Family.class,Partition.class,QuotientEdge.class};
 		Filter filter = new Filter();
 		Binding binding = new Binding();
 
@@ -77,9 +95,70 @@ public class ASPConstrainedGraphPartitioning
 		
 		return answerSets;	
 	}
+	private static GraphPartitioningState buildPartitioning(List<String> answerSet, SimpleGraph<Node, Border> G, SimpleGraph<Partition,PartitionBorder> C) 
+	{
+		int numPartitions = GraphUtil.sizeOf(C);
+		Map<Integer,Node> map = buildMapByValue(G);
+		//Arrays.sort(nodes);		
+		GraphPartitioningState Q =  new GraphPartitioningState();
+		Partition[] pars = new Partition[numPartitions];
+		for(int i =0 ; i < pars.length;i++)
+		{
+			pars[i] = new Partition(i+1);
+ 		}
+		System.out.println(answerSet);
+		ListIterator<String> it = answerSet.listIterator();
+		int num = 0;
+		while(it.hasNext())
+		{
+			String ans = it.next();
+			if(ans.startsWith("belongs"))
+			{
+				int in = ans.indexOf(",");
+				int left = ans.indexOf("(");
+				int right = ans.indexOf(")");
+				int nodeIndex = Integer.parseInt(ans.substring(left+1,in));
+				int parNumber = Integer.parseInt(ans.substring(in+1,right));
+				if(parNumber == 0)
+				{
+					Q.addToRemoved(map.get(nodeIndex));
+				}
+				else
+				{
+					pars[parNumber-1].addMember(map.get(nodeIndex));
+				}
+				num += 1;
+			}
+		}
+		for(int i =0 ; i < pars.length;i++)
+		{
+			Q.addVertex(pars[i]);
+		}
+		GraphUtil.buildQuotientGraph(Q, G);
+		return Q;
+	}
 
-
-	
+	static Map<Integer,Node> buildMapByValue(SimpleGraph<Node,Border> G)
+	{
+		Map<Integer,Node> map = new HashMap<>();
+		Node[] nodes = GraphUtil.getNodes(G);
+		for(int i =0; i < nodes.length;i++)
+		{
+			map.put(nodes[i].getValue(),nodes[i]);
+		}
+		return map;
+		
+	}
+	public GraphPartitioningState partition() 
+	{
+		List<String> answerSet = this.getAnswerSet();
+		if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
+		{
+			System.out.println("No solution was found or time limit reached before a solution is found.");
+			return null;
+		}
+		return buildPartitioning(answerSet,G,C);
+	}
 	
 
 	

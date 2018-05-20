@@ -165,19 +165,30 @@ public class GridGenerator implements BasicGraphGenerator
 	}
 	void drawNode(PApplet applet,boolean drawText,Node node)
 	{
-		CellNode cn = (CellNode)node;
-		int x = cn.cell.getX();
-		int y = cn.cell.getY();
-		Color c = cn.cell.color;
-		applet.strokeWeight(0);
-		applet.stroke(255);
-
-		applet.fill(c.getRed(), c.getGreen(), c.getBlue());
-		applet.rect(x,y,cellDim,cellDim); 
-		if(drawText)
+		if(node.isClusterEmpty())
 		{
-			applet.fill(0);
-			applet.text(node.getValue(), x+cellDim/2, y+cellDim/2);
+			CellNode cn = (CellNode)node;
+			int x = cn.cell.getX();
+			int y = cn.cell.getY();
+			Color c = cn.cell.color;
+			applet.strokeWeight(0);
+			applet.stroke(255);
+	
+			applet.fill(c.getRed(), c.getGreen(), c.getBlue());
+			applet.rect(x,y,cellDim,cellDim); 
+			if(drawText)
+			{
+				applet.fill(0);
+				applet.text(node.getValue(), x+cellDim/2, y+cellDim/2);
+			}
+		}
+		else
+		{
+			ArrayList<Node> cluster = node.getCluster();
+			for(int j = 0 ; j < cluster.size();j++)
+			{
+				drawNode(applet,drawText,cluster.get(j));
+			}
 		}
 	}
 	public void setupGenerator( int cellDim) 

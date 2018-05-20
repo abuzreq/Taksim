@@ -15,26 +15,30 @@ import util.TestsUtil;
 
 public class SameBasicGraphStochasticPartitioningExample {
 
-	static int sizeOfBasicGraph = 60;
+	static int sizeOfBasicGraph = 10;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
 	static int afterCoarseningSize = -1;
 	
-	static Random rand =  new Random(123);
+	static Random rand =  new Random(42);
 	public static void main(String[] args) 
 	{
-		VoronoiGenerator generator = new VoronoiGenerator();
+		//VoronoiGenerator generator = new VoronoiGenerator();
+		GridGenerator generator = new GridGenerator();
 		//Generating the constrain graph
-		final GraphPartitioningState C  = GraphUtil.generateChainGraph(10);
+		final GraphPartitioningState C  = GraphUtil.generateChainGraph(20);
 		GraphPartitioningState result = null;
 		//Setting up the generator and generating the basic graph
-		generator.setupGenerator(sizeOfBasicGraph, true, false, 500, 500, false, false, false);
+		//generator.setupGenerator(sizeOfBasicGraph, true, false, 500, 500, false, false, false);
+		generator.setupGenerator(50);
+		
 		SimpleGraph<Node,Border> G = generator.generate(sizeOfBasicGraph,rand);
 		long t = System.currentTimeMillis();
 		result = ConstrainedGraphPartitioning.partitionConstrainedWithCoarseningAndRandomRestart(new SearchConfiguration(G, C),rand, initialLimitOnMaxNodesExpanded, increamentInLimit, afterCoarseningSize);
 		System.out.println((System.currentTimeMillis() - t)/1000.0);
 		System.out.println("Result Found");
 		//System.out.println(result);
+		generator.startDrawing(G, false);
 		TestsUtil.colorizeRandom(result,Color.WHITE);
 		
 	}

@@ -34,6 +34,7 @@ dependencies {
    	compile group: 'gov.nist.math', name: 'jama', version: '1.0.3'
    	compile group: 'org.processing', name: 'core', version: '3.3.4'
    	compile files('libs/trickl-graph-0.1-SNAPSHOT-jar-with-dependencies.jar')
+   	compile group: 'org.locationtech.jts', name: 'jts-core', version: '1.15.0'
    	
    	compile 'junit:junit:4.12'
    	

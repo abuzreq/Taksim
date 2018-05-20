@@ -113,6 +113,19 @@ public class GraphUtil
 		}
 		return edges;
 	}
+	/**	
+	 * @return The edges which <b>node</b> is part of in the graph <b>G</b>
+	 */
+	public static Set<Border> getEdgesOf(Graph<Node, Border> G, Node node) 
+	{
+		Set<Border> edges  = new HashSet<Border>();
+		for(Border pb : G.edgeSet())
+		{
+			if(pb.getN1().equals(node) ||pb.getN2().equals(node) )
+				edges.add(pb);
+		}
+		return edges;
+	}
 	/**
 	 * @param G
 	 * @return An array of the nodes of the quotient graph <b>G</b>

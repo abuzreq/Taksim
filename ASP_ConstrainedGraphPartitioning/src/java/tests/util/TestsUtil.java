@@ -60,11 +60,12 @@ public class TestsUtil
 		ArrayList<Node> removed = partitions.getRemoved();
 		colorize(removed,removedNodesColor);
 	}	
-	/**
+	/*
+	
 	 * Colors the nodes with the color, the details of how the coloring is done has to currently be added to this method.
 	 * @param nodes
 	 * @param color
-	 */
+	
 	public static void colorize(ArrayList<Node> nodes,Color color)
 	{
 		for (int j = 0; j < nodes.size(); j++) 
@@ -85,6 +86,46 @@ public class TestsUtil
 			}				
 		}	
 	}
+	*/
+	/**
+	 * Colors the nodes with the color, the details of how the coloring is done has to currently be added to this method.
+	 * @param nodes
+	 * @param color
+	 */
+	public static void colorize(ArrayList<Node> nodes,Color color)
+	{
+		for (int j = 0; j < nodes.size(); j++) 
+		{			
+			color(nodes.get(j),color);					
+		}	
+	}
+	public static void color(Node node,Color color)
+	{
+		if(node.isClusterEmpty())
+		{
+			if(node instanceof FaceNode) // FaceNode extends Node and is the result of the VoronoiBuilder generator
+			{
+				FaceNode fn = (FaceNode)node;
+				fn.face.color = color;	
+			}
+			else if(node instanceof CellNode) // FaceNode extends Node and is the result of the VoronoiBuilder generator
+			{
+				CellNode fn = (CellNode)node;
+				fn.cell.color = color;	
+			}
+		}
+		else
+		{
+			ArrayList<Node> arr = node.getCluster();
+			for(int  k= 0 ; k < arr.size();k++)
+			{
+				color(arr.get(k),color);
+			}	
+		}
+	}
+	
+	
+	
 	private static Random rand = new Random();
 	public static Color randomColor(float alpha) {
 		return new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(),alpha);
