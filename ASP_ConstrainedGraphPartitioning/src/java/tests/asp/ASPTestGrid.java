@@ -32,8 +32,8 @@ public class ASPTestGrid
 	static int afterCoarseningSize = -1;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(1234);
-	static int timeLimit = 0;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
-	static int numModels = 1;  
+	static int timeLimit = 30;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
+	static int numModels = 0;  
 	
 	static boolean drawText = true;
 	
@@ -60,11 +60,11 @@ public class ASPTestGrid
 	public static void main(String[] args) 
 	{
 		GridGenerator generator = new GridGenerator();
-		generator.setupGenerator(100);
-		SimpleGraph<Node,Border> G = generator.generate(4,rand);
+		generator.setupGenerator(50);
+		SimpleGraph<Node,Border> G = generator.generate(6,rand);
 		
 		//Generating the constraint graph
-		final GraphPartitioningState C  =GraphUtil.generateChainGraph(3);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
+		final GraphPartitioningState C  =GraphUtil.generateChainGraph(5);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
 		
 		
 		// Coarsening
