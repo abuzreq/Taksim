@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Random;
 
 import org.jgrapht.EdgeFactory;
 import org.jgrapht.graph.SimpleGraph;
@@ -13,6 +14,7 @@ import asp4j.program.Program;
 import asp4j.program.ProgramBuilder;
 import asp4j.solver.SolverBase;
 import asp4j.solver.SolverClingo;
+import asp4j.solver.SolverException;
 import asp4j.solver.object.Binding;
 import asp4j.solver.object.Filter;
 import asp4j.solver.object.ObjectSolverImpl;
@@ -40,9 +42,9 @@ public class ASPConstrainedGraphPartitioning
 	private int timeLimit,numModels;
 
 	private SimpleGraph<Node, Border> G;
-
 	private GraphPartitioningState C;
 	
+	private Random rand ;
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels, Map<Integer, Integer> node2par,int[] pars,OptType[] types,int[] priorities)
 	{
 		writeBasicGraphToFile(G,rulefile_edges);
@@ -61,25 +63,28 @@ public class ASPConstrainedGraphPartitioning
 		this.allowNodeRemoval = allowNodeRemoval;
 		this.timeLimit = timeLimit;
 		this.numModels = numModels;
+		
+		this.rand = new Random();
+		
 			
 	}
 	
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels, Map<Integer, Integer> node2par)
 	{
-		this(G, C, allowNodeRemoval, numModels, numModels, node2par,new int[0],new OptType[0],new int[0]);
+		this(G, C, allowNodeRemoval, timeLimit, numModels, node2par,new int[0],new OptType[0],new int[0]);
 	}
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels)
 	{
-		this(G, C, allowNodeRemoval, numModels, numModels, new HashMap<Integer, Integer>(),new int[0],new OptType[0],new int[0]);
+		this(G, C, allowNodeRemoval, timeLimit, numModels, new HashMap<Integer, Integer>(),new int[0],new OptType[0],new int[0]);
 	}
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels,int[] pars,OptType[] types,int[] priorities)
 	{
-		this(G, C, allowNodeRemoval, numModels, numModels, new HashMap<Integer, Integer>(),pars,types,priorities);
+		this(G, C, allowNodeRemoval, timeLimit, numModels, new HashMap<Integer, Integer>(),pars,types,priorities);
 	}
-	private List<String> getAnswerSet()
+	private List<String> getAnswerSet(int seed)
 	{
 		try {
-			return getAnswerSet(new SolverClingo(numModels), rulefile_main,extraRuleFiles);
+			return getAnswerSet(new SolverClingo(numModels), seed, rulefile_main,extraRuleFiles);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -89,10 +94,9 @@ public class ASPConstrainedGraphPartitioning
 	
 	private int numNodes ;
 	private int numPartitions;
-	private List<String> getAnswerSet(SolverBase externalSolver,String mainRuleFile, String[] extraRuleFiles) throws Exception 
+	private List<String> getAnswerSet(SolverBase externalSolver,int seed,String mainRuleFile, String[] extraRuleFiles) throws Exception 
 	{
-		ObjectSolverImpl solver = new ObjectSolverImpl(externalSolver);
-		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit +" -t 4,split");//+
+		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed);// +" -t 4,split");//+
 		ProgramBuilder<Object> pb = new ProgramBuilder<>();
 		
 		pb.add(new File(mainRuleFile));
@@ -100,24 +104,15 @@ public class ASPConstrainedGraphPartitioning
 		{
 			pb.add(new File(rulefile));
 		}
-		
-		
+			
 		Program<Object> program = pb.build();
-		
-		Class[] classes = {String.class,Node.class,Edge.class,Reach.class,Belongs.class,Contains.class,Contiguous.class,Family.class,Partition.class,QuotientEdge.class};
-		Filter filter = new Filter();
-		Binding binding = new Binding();
 
-		for (int i = 0 ; i < classes.length;i++)
-		{
-			filter.add(classes[i]);
-			//binding.add(classes[i]);
-		}
-		
-		List<String> answerSets = solver.computeAnswerSetsAsStrings(program,binding,filter);
+		List<String> answerSets = externalSolver.getAnswerSetsAsStrings(program);
 		
 		return answerSets;	
 	}
+
+	 
 	private static void writeBasicGraphToFile(SimpleGraph<Node, Border> G, String rulefile) 
 	{
 		Border[] edges = GraphUtil.getBorders(G);
@@ -267,6 +262,8 @@ public class ASPConstrainedGraphPartitioning
 	private static void writePartitionsSizeOptimizationToFile(int[] pars,OptType[] opt,int[] priorities, String rulefile) 
 	{
 		//#maximize {N@priority_i: belongs(N,P),node(N),P==i}. 
+		//%#maximize {T:count(P,T),partition(P),P==1}.
+
 		try 
 		{	
 			FileWriter fw = new FileWriter(rulefile);
@@ -274,12 +271,12 @@ public class ASPConstrainedGraphPartitioning
 			for(int i = 0; i < pars.length;i++)
 			{
 				if(opt[i] == OptType.MAX)
-					sb.append("#maximize {N@");
+					sb.append("#maximize {T@");
 				else if (opt[i]==OptType.MIN)
 					sb.append("#minimize {N@");
 
 				sb.append(priorities[i]);
-				sb.append(": belongs(N,P),node(N),P==");
+				sb.append(": count(P,T),partition(P),P==");
 				sb.append(pars[i]);
 				sb.append("}.\n");
 			}
@@ -346,17 +343,21 @@ public class ASPConstrainedGraphPartitioning
 		return map;
 		
 	}
-	public GraphPartitioningState partition() 
+	public GraphPartitioningState partition(int seed) 
 	{
-		List<String> answerSet = this.getAnswerSet();
+		List<String> answerSet = this.getAnswerSet(seed);
 		if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
 		{
 			//System.out.println("No solution was found or time limit reached before a solution is found.");
 			return null;
 		}
+		System.out.println(answerSet);
 		return buildPartitioning(answerSet,G,C);
 	}
-	
+	public GraphPartitioningState partition() 
+	{
+		return partition(rand.nextInt(Integer.MAX_VALUE));
+	}
 
 	
 }

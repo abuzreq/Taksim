@@ -5,11 +5,11 @@
 %node(0..n-1).
 
 partition(r..p).
+partition2(1..p).
 
 1{belongs(N,P):partition(P)}1 :- node(N).
 
 %n{belongs(N,P):partition(P),node(N)}n.  
-
 %:- belongs(N1,P1),belongs(N2,P2),N1==N2,P1!=P2,partition(P1),partition(P2),node(N1),node(N2).
 
 
@@ -26,20 +26,16 @@ reach(X,Z) :- reach(X,Y), reach(Y,Z).
 
 contiguous(P) :-  partition(P),reach(N1,N2):family(N1,N2,P),node(N1), node(N2) .
 :- not contiguous(1..p).
-%:- contiguous(0).
 edge_q(P1,P2) :- partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2).
 
+
+count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
+
+
+%count_borders(P1,P2,T):- T = T1+T2,T1 = #count{N1},T2 = #count{N2},P1 < P2,edge(N1,N2),node(N1),node(N2),belongs(N1,P1),belongs(N2,P2),partition(P1),partition(P2),P1 != 0, P2 != 0.
 %#minimize {(N1+N2)@1:partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2)}.
-%#minimize {N: belongs(N,P),node(N),P==0}.
 
 
-%TODO reduce redundancy in contains vs belongs,
-%Constraints:
-%(Hard const) requiring certain nodes to belong to partitions (:- belongs(1,1).)
-%(Soft const) partition sizes: e.g. has a minimum , be balanced? ,follows a provided ratio (property-percentage const.)
-%(Soft const) related to above, minimize removed nodes
-% mapping constraint: using lots of node-in-partition constraints, 
-%but with possibly as additional constraint to require the this partition doesn't grow any larger
 
 
 

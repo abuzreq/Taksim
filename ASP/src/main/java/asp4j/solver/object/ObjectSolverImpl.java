@@ -84,12 +84,10 @@ public class ObjectSolverImpl implements ObjectSolver {
         }
     }
     public List<String> computeAnswerSetsAsStrings(Program<Object> program, Binding binding, Filter filter) throws SolverException {
-        Program<Atom> atomProgram = getAtomProgram(program, binding, filter);
-        List<String> answerSets = solver.getAnswerSetsAsStrings(atomProgram);
+        List<String> answerSets = solver.getAnswerSetsAsStrings(program);
         return answerSets;
     }
-    private Program<Atom> getAtomProgram(Program<Object> program, Binding binding, Filter filter) throws SolverException {
-        prepareIO(program, binding, filter);
+    private Program<Atom> getAtomProgram(Program<Object> program, Binding binding) throws SolverException {
         ProgramBuilder<Atom> builder = new ProgramBuilder<>();
         builder.addFiles(program.getFiles());
         try {

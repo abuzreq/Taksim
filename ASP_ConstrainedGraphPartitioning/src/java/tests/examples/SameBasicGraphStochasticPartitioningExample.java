@@ -15,7 +15,7 @@ import util.TestsUtil;
 
 public class SameBasicGraphStochasticPartitioningExample {
 
-	static int sizeOfBasicGraph = 10;
+	static int sizeOfBasicGraph = 6;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
 	static int afterCoarseningSize = -1;
@@ -26,7 +26,7 @@ public class SameBasicGraphStochasticPartitioningExample {
 		//VoronoiGenerator generator = new VoronoiGenerator();
 		GridGenerator generator = new GridGenerator();
 		//Generating the constrain graph
-		final GraphPartitioningState C  = GraphUtil.generateChainGraph(20);
+		final GraphPartitioningState C  = GraphUtil.generateChainGraph(5);
 		GraphPartitioningState result = null;
 		//Setting up the generator and generating the basic graph
 		//generator.setupGenerator(sizeOfBasicGraph, true, false, 500, 500, false, false, false);

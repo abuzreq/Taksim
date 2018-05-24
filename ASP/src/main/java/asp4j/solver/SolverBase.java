@@ -72,7 +72,7 @@ public abstract class SolverBase implements Solver {
         lastProgramAnswerSets = null;
     }
 
-    public List<String> getAnswerSetsAsStrings(Program<Atom> program) throws SolverException 
+    public List<String> getAnswerSetsAsStrings(Program<Object> program) throws SolverException 
     {
         preSolverExec(program);
         try {
@@ -85,27 +85,7 @@ public abstract class SolverBase implements Solver {
           throw new SolverException(e);
         } 
     }
-    @Override
-    public List<AnswerSet<Atom>> getAnswerSets(Program<Atom> program) throws SolverException {
-        if (lastProgramAnswerSets != null && program.hashCode() == lastProgramHashCode) {
-            return lastProgramAnswerSets;
-        }
-        lastProgramHashCode = program.hashCode();
-        preSolverExec(program);
-        try {
-            Process exec = Runtime.getRuntime().exec(solverCallString(program));
-            List<String> answerSetStrings = getAnswerSetStrings(exec);
-            postSolverExec(program);
-            return lastProgramAnswerSets = Collections.unmodifiableList(mapAnswerSetStrings(answerSetStrings));
-        } catch (IOException | ParseException e)
-        {
-          throw new SolverException(e);
-        } 
-    }
-    static String convertInputStreamToString(java.io.InputStream is) {
-        java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-        return s.hasNext() ? s.next() : "";
-    }
+
 
     /**
      * maps a list of answer sets, represented as strings, to a list of (low
@@ -164,7 +144,7 @@ public abstract class SolverBase implements Solver {
      * @return full call to solver, i.e., solver command plus programs
      * @throws IOException
      */
-    protected String solverCallString(Program<Atom> program) throws IOException {
+    protected String solverCallString(Program<Object> program) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append(solverCommand());
         for (File file : program.getFiles()) {
@@ -174,8 +154,7 @@ public abstract class SolverBase implements Solver {
             sb.append(" ").append(inputFile.getAbsolutePath());
         }
         
-        System.out.println("CMD>> "+sb.toString() + extraParams);
-        
+        System.out.println("CMD>> "+sb.toString() + extraParams);     
         return sb.toString()+extraParams;
     }
 
@@ -190,13 +169,13 @@ public abstract class SolverBase implements Solver {
     /**
      * executed before call to solver
      */
-    protected void preSolverExec(Program<Atom> program) throws SolverException {
-        Collection<Atom> inputAtoms = program.getInput();
+    protected void preSolverExec(Program<Object> program) throws SolverException {
+        Collection<Object> inputAtoms = program.getInput();
         if (inputAtoms.isEmpty()) {
             return;
         }
         StringBuilder sb = new StringBuilder();
-        for (Atom atom : inputAtoms) {
+        for (Object atom : inputAtoms) {
             sb.append(atom.toString());
         }
         try {
@@ -209,6 +188,6 @@ public abstract class SolverBase implements Solver {
     /**
      * executed after call to solver
      */
-    protected void postSolverExec(Program<Atom> program) {
+    protected void postSolverExec(Program<Object> program) {
     }
 }

@@ -200,7 +200,7 @@ public class ConstrainedGraphPartitioning
 			{
 				if(maxNodesExpanded != -1 && ne.getNumOfExpandCalls() > maxNodesExpanded)
 				{
-					System.out.println("Limit on num of nodes expansions reached = "+maxNodesExpanded);				
+					//System.out.println("Limit on num of nodes expansions reached = "+maxNodesExpanded);				
 					thread.cancel();				
 				}
 			}

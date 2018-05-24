@@ -33,7 +33,7 @@ public class ASPTestGrid
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(1234);
 	static int timeLimit = 0;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
-	static int numModels = 40;  
+	static int numModels = 1;  
 	
 	static boolean drawText = true;
 	
@@ -60,11 +60,11 @@ public class ASPTestGrid
 	public static void main(String[] args) 
 	{
 		GridGenerator generator = new GridGenerator();
-		generator.setupGenerator(50);
-		SimpleGraph<Node,Border> G = generator.generate(7,rand);
+		generator.setupGenerator(100);
+		SimpleGraph<Node,Border> G = generator.generate(4,rand);
 		
 		//Generating the constraint graph
-		final GraphPartitioningState C  = GraphUtil.generateChainGraph(10);//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
+		final GraphPartitioningState C  =GraphUtil.generateChainGraph(3);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
 		
 		
 		// Coarsening
@@ -83,7 +83,8 @@ public class ASPTestGrid
 		ArrayList<Node> start = new ArrayList<>();
 		start.add(nodes[0]);
 		start.add(nodes[1]);
-	
+		start.add(nodes[2]);
+		
 		Object[] objs = groupNodes(G,start);
 		G = (SimpleGraph<Node, Border>) objs[0];
 		Node startNode = (Node) objs[1];
@@ -96,17 +97,25 @@ public class ASPTestGrid
 		*/
 		
 		//Size Optimization
-		/* 
+		
 		int numPartitions = GraphUtil.sizeOf(C);
 		int[] pars = range(1,numPartitions);
 		OptType[] optTypesMax = getOptTypes(numPartitions,OptType.MAX);
 		OptType[] optTypesMin = getOptTypes(numPartitions,OptType.MIN);
 		int[] priorities = constant(numPartitions,1);
-		*/
 		
-		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels);
-		GraphPartitioningState result  = asp.partition();
-
+		
+		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels);//,pars,optTypesMax,priorities);
+		GraphPartitioningState result = null;
+		int n =0 ;
+		while(result == null)
+		{
+		 result  = asp.partition();
+		 n++;
+		 if(n > 50)
+			 break;
+		}
+		System.out.println(GraphUtil.getPartitions(result)[0].getMembers());
 		generator.startDrawing(G,drawText);		
 		TestsUtil.colorizeRandom(result,Color.WHITE);
 	}
