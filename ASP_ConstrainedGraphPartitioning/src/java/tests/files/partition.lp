@@ -29,15 +29,16 @@ contiguous(P) :-  partition(P),reach(N1,N2):family(N1,N2,P),node(N1), node(N2) .
 edge_q(P1,P2) :- partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2).
 
 
-%count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
+count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
 
+#maximize{T@1:count(P,T),partition(P),P != 0}.
 
+%nodes on borders optimization
 count_borders_supp(P1,P2,T):- T = #count{N1:
 	belongs(N1,P1),belongs(N2,P2),
 	edge(N1,N2),node(N1),node(N2)},
 	partition(P1),partition(P2),P1 != P2,
 	P1 != 0, P2 != 0.
-
 
 count_borders(P1,P2,T) :- 
 	T = T1+T2,
@@ -45,12 +46,10 @@ count_borders(P1,P2,T) :-
 	count_borders_supp(P2,P1,T2),
 	partition(P1),partition(P2),P1<P2.
 
-#minimize {T@1:
+#minimize {T@3:
 	count_borders(P1,P2,T),
 	partition(P1),partition(P2)}.
-	
-%count_borders(P1,P2,T):- T = T1+T2,count_borders1(P1,P2,T1),count_borders2(P1,P2,T2).partition(P1),partition(P2).
-%#minimize {(N1+N2)@1:partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2)}.
+
 
 
 

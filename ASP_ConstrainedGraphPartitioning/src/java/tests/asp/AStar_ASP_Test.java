@@ -18,10 +18,10 @@ import util.GraphUtil;
 
 public class AStar_ASP_Test 
 {
-	static int gridDim = 7;
-	static int sizeMax = 25;
+	static int gridDim = 6;
+	static int sizeMax = 17;
 	static int sizeInc = 2;
-	static int sizeInit = 25;
+	static int sizeInit = 3;
 	static int numRuns = 100; 
 	static int afterCoarseningSize = -1;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
@@ -50,11 +50,11 @@ public class AStar_ASP_Test
 					results.add(new RunResult(size,(System.currentTimeMillis() - t)));
 				else
 					numNulls++;
-				System.out.println(i);
+				//System.out.println(i);
 			}
 			System.out.println("Done with size= "+size + ", numNulls = "+numNulls);
 		}
-		writeToCSV(results,"asp_5.csv",true);
+		writeToCSV(results,"asp_no_rand.csv",true);
 	}
 
 	static class RunResult

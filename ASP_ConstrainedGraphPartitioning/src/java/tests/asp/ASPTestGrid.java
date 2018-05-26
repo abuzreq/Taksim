@@ -29,7 +29,7 @@ public class ASPTestGrid
 	static int sizeOfBasicGraph = 70;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
-	static int afterCoarseningSize = -1;//-1 for no coarsening
+	static int afterCoarseningSize = 40;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(1234);
 	static int timeLimit = 30;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
@@ -61,10 +61,10 @@ public class ASPTestGrid
 	{
 		GridGenerator generator = new GridGenerator();
 		generator.setupGenerator(50);
-		SimpleGraph<Node,Border> G = generator.generate(6,rand);
+		SimpleGraph<Node,Border> G = generator.generate(8,rand);
 		
 		//Generating the constraint graph
-		final GraphPartitioningState C  =GraphUtil.generateChainGraph(5);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
+		final GraphPartitioningState C  =GraphUtil.generateChainGraph(1);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
 		
 		
 		// Coarsening
@@ -105,7 +105,7 @@ public class ASPTestGrid
 		int[] priorities = constant(numPartitions,1);
 		
 		
-		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels);//,pars,optTypesMax,priorities);
+		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels,pars,optTypesMax,priorities);
 		GraphPartitioningState result = null;
 		int n =0 ;
 		while(result == null)

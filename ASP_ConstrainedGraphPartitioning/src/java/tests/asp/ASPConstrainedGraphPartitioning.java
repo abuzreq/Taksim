@@ -96,7 +96,7 @@ public class ASPConstrainedGraphPartitioning
 	private int numPartitions;
 	private List<String> getAnswerSet(SolverBase externalSolver,int seed,String mainRuleFile, String[] extraRuleFiles) throws Exception 
 	{
-		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed);// +" -t 4,split");//+
+		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.0" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed);// +" -t 4,split");//+
 		ProgramBuilder<Object> pb = new ProgramBuilder<>();
 		
 		pb.add(new File(mainRuleFile));
@@ -351,7 +351,7 @@ public class ASPConstrainedGraphPartitioning
 			//System.out.println("No solution was found or time limit reached before a solution is found.");
 			return null;
 		}
-		System.out.println(answerSet);
+		//System.out.println(answerSet);
 		return buildPartitioning(answerSet,G,C);
 	}
 	public GraphPartitioningState partition() 
