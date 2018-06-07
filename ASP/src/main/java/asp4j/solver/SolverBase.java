@@ -49,7 +49,7 @@ public abstract class SolverBase implements Solver {
      * @return list of strings, each representing an answer set
      */
     protected abstract List<String> getAnswerSetStrings(Process exec) throws IOException;
-
+    protected abstract List<List<String>> getAnswerSetStrings(Process exec,int num) throws IOException;
     /**
      * prepare answer set string for tokenization. e.g. surrounding braces may
      * be removed.
@@ -70,6 +70,20 @@ public abstract class SolverBase implements Solver {
     //
     protected void clear() {
         lastProgramAnswerSets = null;
+    }
+
+    public List<List<String>> getAnswerSetsAsStrings(Program<Object> program,int num) throws SolverException 
+    {
+        preSolverExec(program);
+        try {
+            Process exec = Runtime.getRuntime().exec(solverCallString(program));
+            //exec.waitFor();
+            List<List<String>> answerSetStrings = getAnswerSetStrings(exec,num);
+            postSolverExec(program);
+            return  Collections.unmodifiableList(answerSetStrings);
+        } catch (IOException e) {
+          throw new SolverException(e);
+        } 
     }
 
     public List<String> getAnswerSetsAsStrings(Program<Object> program) throws SolverException 
@@ -154,7 +168,7 @@ public abstract class SolverBase implements Solver {
             sb.append(" ").append(inputFile.getAbsolutePath());
         }
         
-        //System.out.println("CMD>> "+sb.toString() + extraParams);     
+        System.out.println("CMD>> "+sb.toString() + extraParams);     
         return sb.toString()+extraParams;
     }
 

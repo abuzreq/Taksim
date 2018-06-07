@@ -2,22 +2,21 @@ package asp;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
 
 import org.jgrapht.EdgeFactory;
+import org.jgrapht.alg.isomorphism.VF2GraphIsomorphismInspector;
 import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.graph.UndirectedSubgraph;
 
 import asp4j.program.Program;
 import asp4j.program.ProgramBuilder;
-import asp4j.solver.SolverBase;
 import asp4j.solver.SolverClingo;
-import asp4j.solver.SolverException;
-import asp4j.solver.object.Binding;
-import asp4j.solver.object.Filter;
-import asp4j.solver.object.ObjectSolverImpl;
 import search.basic.Border;
 import search.basic.GraphPartitioningState;
 import search.basic.Node;
@@ -44,8 +43,9 @@ public class ASPConstrainedGraphPartitioning
 	private SimpleGraph<Node, Border> G;
 	private GraphPartitioningState C;
 	
+	private Map<Integer,SimpleGraph<Node, Border>> par2graph;
 	private Random rand ;
-	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels, Map<Integer, Integer> node2par,int[] pars,OptType[] types,int[] priorities)
+	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels, Map<Integer, Integer> node2par,int[] pars,OptType[] types,int[] priorities,Map<Integer,SimpleGraph<Node, Border>> par2graph)
 	{
 		writeBasicGraphToFile(G,rulefile_edges);
 		writeConstraintGraphToFile(C,rulefile_adjacency_constraints);
@@ -64,37 +64,63 @@ public class ASPConstrainedGraphPartitioning
 		this.timeLimit = timeLimit;
 		this.numModels = numModels;
 		
-		this.rand = new Random();
+		this.rand = new Random();	
 		
-			
+		this.par2graph = par2graph;
 	}
 	
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels, Map<Integer, Integer> node2par)
 	{
-		this(G, C, allowNodeRemoval, timeLimit, numModels, node2par,new int[0],new OptType[0],new int[0]);
+		this(G, C, allowNodeRemoval, timeLimit, numModels, node2par,new int[0],new OptType[0],new int[0], null);
 	}
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels)
 	{
-		this(G, C, allowNodeRemoval, timeLimit, numModels, new HashMap<Integer, Integer>(),new int[0],new OptType[0],new int[0]);
+		this(G, C, allowNodeRemoval, timeLimit, numModels, new HashMap<Integer, Integer>(),new int[0],new OptType[0],new int[0], null);
 	}
 	public ASPConstrainedGraphPartitioning(SimpleGraph<Node, Border> G, GraphPartitioningState C, boolean allowNodeRemoval, int timeLimit, int numModels,int[] pars,OptType[] types,int[] priorities)
 	{
-		this(G, C, allowNodeRemoval, timeLimit, numModels, new HashMap<Integer, Integer>(),pars,types,priorities);
+		this(G, C, allowNodeRemoval, timeLimit, numModels, new HashMap<Integer, Integer>(),pars,types,priorities, null);
 	}
-	private List<String> getAnswerSet(int seed)
+
+	private int numNodes ;
+	private int numPartitions;
+
+	private List<List<String>>  getAnswerSets(int seed, int num)
 	{
 		try {
-			return getAnswerSet(new SolverClingo(numModels), seed, rulefile_main,extraRuleFiles);
+			return getAnswerSets(new SolverClingo(numModels), seed, rulefile_main,extraRuleFiles,num);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
+	private List<String> getAnswerSet(int seed)
+	{
+		try {
+			return getAnswerSets(new SolverClingo(numModels), seed, rulefile_main,extraRuleFiles);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	private List<List<String>>  getAnswerSets(SolverClingo externalSolver,int seed,String mainRuleFile, String[] extraRuleFiles,int num) throws Exception 
+	{
+		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.0" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed);// +" -t 4,split");//+
+		ProgramBuilder<Object> pb = new ProgramBuilder<>();
+		
+		pb.add(new File(mainRuleFile));
+		for(String rulefile : extraRuleFiles)
+		{
+			pb.add(new File(rulefile));
+		}
+			
+		Program<Object> program = pb.build();
 
-	
-	private int numNodes ;
-	private int numPartitions;
-	private List<String> getAnswerSet(SolverBase externalSolver,int seed,String mainRuleFile, String[] extraRuleFiles) throws Exception 
+		List<List<String>> answerSets = externalSolver.getAnswerSetsAsStrings(program,num);
+		
+		return answerSets;	
+	}
+	private List<String> getAnswerSets(SolverClingo externalSolver,int seed,String mainRuleFile, String[] extraRuleFiles) throws Exception 
 	{
 		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.0" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed);// +" -t 4,split");//+
 		ProgramBuilder<Object> pb = new ProgramBuilder<>();
@@ -111,8 +137,6 @@ public class ASPConstrainedGraphPartitioning
 		
 		return answerSets;	
 	}
-
-	 
 	private static void writeBasicGraphToFile(SimpleGraph<Node, Border> G, String rulefile) 
 	{
 		Border[] edges = GraphUtil.getBorders(G);
@@ -343,21 +367,80 @@ public class ASPConstrainedGraphPartitioning
 		return map;
 		
 	}
-	public GraphPartitioningState partition(int seed) 
+
+	public GraphPartitioningState partition(int seed,int numSolutions) 
 	{
-		List<String> answerSet = this.getAnswerSet(seed);
-		if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
+		List<GraphPartitioningState> solutions = new LinkedList<GraphPartitioningState> ();
+		if(numSolutions == 1)
 		{
-			//System.out.println("No solution was found or time limit reached before a solution is found.");
-			return null;
+			List<String> answerSet = this.getAnswerSet(seed);
+			if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
+			{
+				//System.out.println("No solution was found or time limit reached before a solution is found.");
+				return null;
+			}
+			solutions.add(buildPartitioning(answerSet,G,C));
 		}
-		//System.out.println(answerSet);
-		return buildPartitioning(answerSet,G,C);
+		else
+		{
+			List<List<String>>  answerSet = this.getAnswerSets(seed,numSolutions);
+			if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
+			{
+				//System.out.println("No solution was found or time limit reached before a solution is found.");
+				return null;
+			}
+			for(List<String> answer : answerSet)
+			{
+				//System.out.println("Line: "+answer);
+				solutions.add(buildPartitioning(answer,G,C));
+			}
+		}
+		if(par2graph != null && numSolutions != 1)
+		{
+			List<GraphPartitioningState> filteredSolutions = new LinkedList<GraphPartitioningState> ();
+			for(GraphPartitioningState Q : solutions)
+			{
+				//Here enfore constaints
+				boolean satisfied= arePartitionsGraphsMatching(Q,G,par2graph);
+				if(satisfied)
+				{
+					filteredSolutions.add(Q);
+				}
+			}
+			if(filteredSolutions.isEmpty())
+				return null;
+			return filteredSolutions.get(filteredSolutions.size()-1);
+		}
+		else
+			return solutions.get(solutions.size()-1);
+		
 	}
 	public GraphPartitioningState partition() 
 	{
-		return partition(rand.nextInt(Integer.MAX_VALUE));
+		return partition(rand.nextInt(Integer.MAX_VALUE),1);
 	}
-
+	public GraphPartitioningState partition(int num) 
+	{
+		return partition(rand.nextInt(Integer.MAX_VALUE),num);
+	}
+	private boolean arePartitionsGraphsMatching(GraphPartitioningState Q,SimpleGraph<Node,Border> G,Map<Integer,SimpleGraph<Node, Border>> par2graph)
+	{
+		Partition[] pars = GraphUtil.getPartitions(Q);
+		for(int i = 0 ; i < pars.length;i++)
+		{
+			SimpleGraph<Node, Border> targetGraph = par2graph.get(pars[i].getNumber());
+			if(targetGraph != null)
+			{
+				UndirectedSubgraph<Node, Border> sub = new UndirectedSubgraph<Node, Border> (G, new HashSet(pars[i].getMembers()));
+				
+				VF2GraphIsomorphismInspector<Node, Border> inspector = new VF2GraphIsomorphismInspector<Node, Border>(sub, targetGraph);
+				if( !inspector.isomorphismExists())
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 	
 }

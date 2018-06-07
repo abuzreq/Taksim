@@ -29,10 +29,10 @@ public class ASPTestGrid
 	static int sizeOfBasicGraph = 70;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
-	static int afterCoarseningSize = 40;//-1 for no coarsening
+	static int afterCoarseningSize = -1;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(1234);
-	static int timeLimit = 30;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
+	static int timeLimit = 10;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
 	static int numModels = 0;  
 	
 	static boolean drawText = true;
@@ -61,10 +61,10 @@ public class ASPTestGrid
 	{
 		GridGenerator generator = new GridGenerator();
 		generator.setupGenerator(50);
-		SimpleGraph<Node,Border> G = generator.generate(8,rand);
+		SimpleGraph<Node,Border> G = generator.generate(6,rand);
 		
 		//Generating the constraint graph
-		final GraphPartitioningState C  =GraphUtil.generateChainGraph(1);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
+		final GraphPartitioningState C  =GraphUtil.generateChainGraph(3);getC();//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
 		
 		
 		// Coarsening
@@ -91,29 +91,52 @@ public class ASPTestGrid
 		*/
 		
 		//Node Membership constraint
-		/*
+		
 		Map<Integer,Integer> node2par = new HashMap<>();
-		node2par.put(startNode.getValue(), 1);
-		*/
+		//node2par.put(startNode.getValue(), 1);
+		
 		
 		//Size Optimization
 		
 		int numPartitions = GraphUtil.sizeOf(C);
-		int[] pars = range(1,numPartitions);
+		int[] pars = new int[0];
+		//pars = range(1,numPartitions);
 		OptType[] optTypesMax = getOptTypes(numPartitions,OptType.MAX);
 		OptType[] optTypesMin = getOptTypes(numPartitions,OptType.MIN);
 		int[] priorities = constant(numPartitions,1);
 		
+		Map<Integer,SimpleGraph<Node, Border>> par2graph = new HashMap<Integer, SimpleGraph<Node,Border>>();
 		
-		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels,pars,optTypesMax,priorities);
+		SimpleGraph<Node, Border> g1 = new SimpleGraph<Node, Border>(Border.class);
+		
+		Border b = new Border(new Node(1),new Node(2));
+		g1.addVertex(b.getN1());
+		g1.addVertex(b.getN2());
+		g1.addEdge(b.getN1(), b.getN2(),b);
+		
+		Border b2 = new Border(b.getN2(),new Node(3));
+		g1.addVertex(b2.getN1());
+		g1.addVertex(b2.getN2());
+		g1.addEdge(b2.getN1(), b2.getN2(),b2);
+		
+		SimpleGraph<Node, Border> g2 = new SimpleGraph<Node, Border>(Border.class);
+		Border b3 = new Border(new Node(4),new Node(5));
+		g2.addVertex(b3.getN1());
+		g2.addVertex(b3.getN2());
+		g2.addEdge(b3.getN1(), b3.getN2(),b3);
+		
+		par2graph.put(1, g1);
+		par2graph.put(2, g2);
+		
+		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels,node2par, pars,optTypesMax,priorities,par2graph);
 		GraphPartitioningState result = null;
 		int n =0 ;
-		while(result == null)
+		//while(result == null)
 		{
 		 result  = asp.partition();
 		 n++;
-		 if(n > 50)
-			 break;
+		 //if(n > 50)
+		 //	 break;
 		}
 		System.out.println(GraphUtil.getPartitions(result)[0].getMembers());
 		generator.startDrawing(G,drawText);		
