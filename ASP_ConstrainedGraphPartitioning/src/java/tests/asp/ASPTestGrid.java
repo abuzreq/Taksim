@@ -66,7 +66,7 @@ public class ASPTestGrid
 			return par;
 		}};
 		
-	static private int dim = 5;		
+	static private int dim = 12;		
 	public static void main(String[] args) 
 	{
 		GridGenerator generator = new GridGenerator();
@@ -75,7 +75,9 @@ public class ASPTestGrid
 		//6, 21 nodes
 		//Generating the constraint graph
 		//final GraphPartitioningState C  =GraphUtil.generateChainGraph(5);//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
-		final GraphPartitioningState C = getC();//TestsUtil.readConstraintGraphs("G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\test_graphs\\zelda.in").get(0);
+		final GraphPartitioningState C = TestsUtil.readConstraintGraphs("G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\test_graphs\\tsmith.in").get(0);
+		System.out.println(C.getNamesMap());
+		/*
 		Map<Integer,String> missionsNames = new HashMap<Integer,String>();
 		missionsNames.put(1, "start");
 		missionsNames.put(2, "fight");
@@ -85,7 +87,7 @@ public class ASPTestGrid
 		missionsNames.put(6, "puzzle");
 		missionsNames.put(7, "boss");
 		missionsNames.put(8, "end");
-		
+		*/
 		// Coarsening
 		if(afterCoarseningSize != -1)
 		{
@@ -141,8 +143,8 @@ public class ASPTestGrid
 		
 		String bordersJson = getBordersJSON(pair.answerSet);
 		String basicGraphJson = toJSON(G,dim,dim);	
-		String constraintGraphJson = toJSON(C,missionsNames);
-		String partitionsJson =  getPartitionsJSON(result);
+		String constraintGraphJson = toJSON(C,C.getNamesMap());
+		String partitionsJson =  getPartitionsJSON(result,C.getNamesMap());
 		
 		System.out.println(basicGraphJson);
 		System.out.println(constraintGraphJson);
@@ -181,7 +183,7 @@ public class ASPTestGrid
 		*/
 	}
 	
-	static String getPartitionsJSON(GraphPartitioningState state)
+	static String getPartitionsJSON(GraphPartitioningState state,Map<Integer,String> namesMap)
 	{
 		int numPartitions = GraphUtil.sizeOf(state);
 		JSONObject obj = new JSONObject();
@@ -199,12 +201,15 @@ public class ASPTestGrid
 			removedPartitionObject.put("adjacentPartitions", new JSONArray());
 			arr.put(removedPartitionObject);
 		}
-		
+		System.out.println(namesMap);
 		Partition[] partitions = GraphUtil.getPartitions(state);
 		for(int i = 0;i < numPartitions;i++)
 		{
 			JSONObject partitionObject = new JSONObject();
 			partitionObject.put("id", partitions[i].getNumber());// Partitions from asp approach start from 1 normally
+			System.out.println(partitions[i].getNumber()+ " "+namesMap.get(partitions[i].getNumber()-1));
+			partitionObject.put("type",namesMap.get(partitions[i].getNumber()-1));
+
 			JSONArray nodes = new JSONArray();
 			for(Node v : partitions[i].getMembers())//TODO handling coarsening
 			{		
@@ -234,8 +239,6 @@ public class ASPTestGrid
 				}
 				neighborObject.put("nodes", neighborNodes);
 				neighbors.put(neighborObject);
-				System.out.println(p);
-
 			}
 			//System.out.println(neighbors);
 

@@ -176,6 +176,12 @@ public class TestsUtil
 					PartitionBorder b = new PartitionBorder(new Partition(next(scan)),new Partition(next(scan)));
 					graph.addEdge(b.getP1(),b.getP2(),b);
 				}
+				Map<Integer,String> numToNameMap = new HashMap<>();
+				for(Map.Entry<String,Integer> entry : nameToNumMap.entrySet()){
+					numToNameMap.put(entry.getValue(), entry.getKey());
+				}
+				
+				graph.setNamesMap(numToNameMap);
 				graphs.add(graph);
 			}
 			
@@ -184,7 +190,7 @@ public class TestsUtil
 		}
 		return graphs;
 	}
-	private static Map<String,Integer> map = new HashMap<String, Integer>();
+	private static Map<String,Integer> nameToNumMap = new HashMap<String, Integer>();
 	private static int counter = 0;
 	private static int next(Scanner scan)
 	{
@@ -197,14 +203,14 @@ public class TestsUtil
 		 catch(InputMismatchException ex)
 		 {
 			String str = scan.next();
-			if(!map.containsKey(str))
+			if(!nameToNumMap.containsKey(str))
 			{
-				map.put(str, counter);
+				nameToNumMap.put(str, counter);
 				counter++;
 			}
-			n = map.get(str);
+			n = nameToNumMap.get(str);
 		 }
-		 System.out.println(n);
+		 //System.out.println(n);
 		 return n;
 	}
 	/**

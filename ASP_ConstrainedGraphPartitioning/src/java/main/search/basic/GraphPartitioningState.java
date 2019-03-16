@@ -1,6 +1,8 @@
 package search.basic;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jgrapht.graph.SimpleGraph;
 
@@ -8,6 +10,8 @@ import util.GraphUtil;
 
 public class GraphPartitioningState extends SimpleGraph<Partition,PartitionBorder>
 {
+	private Map<Integer,String> namesMap = new HashMap<Integer,String>();
+
 	/**The removed nodes (through NodeRemoval actions)**/
 	private ArrayList<Node> removed = new ArrayList<Node>();
 		
@@ -92,6 +96,14 @@ public class GraphPartitioningState extends SimpleGraph<Partition,PartitionBorde
 	public int hashCode()
 	{
 		return super.hashCode();		
+	}
+	public Map<Integer,String> getNamesMap()
+	{
+		return namesMap;
+	}
+	public void setNamesMap(Map<Integer,String> namesMap)
+	{
+		this.namesMap = namesMap;
 	}
 
 }
