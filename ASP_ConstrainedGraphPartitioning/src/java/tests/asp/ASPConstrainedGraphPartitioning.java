@@ -96,7 +96,7 @@ public class ASPConstrainedGraphPartitioning
 	private int numPartitions;
 	private List<String> getAnswerSet(SolverBase externalSolver,int seed,String mainRuleFile, String[] extraRuleFiles) throws Exception 
 	{
-		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed);// +" -t 4,split");//+
+		externalSolver.setExtraParams(" --const n="+numNodes+" --const p="+numPartitions + " --rand-freq=0.5" + " --const r="+(allowNodeRemoval?0:1) + " --time-limit="+timeLimit + " --seed="+seed );//+ +" -t 4,compete"
 		ProgramBuilder<Object> pb = new ProgramBuilder<>();
 		
 		pb.add(new File(mainRuleFile));
@@ -358,6 +358,31 @@ public class ASPConstrainedGraphPartitioning
 	{
 		return partition(rand.nextInt(Integer.MAX_VALUE));
 	}
-
+	
+	public Pair partitionFull(int seed) 
+	{
+		List<String> answerSet = this.getAnswerSet(seed);
+		if(answerSet.get(0).equals("UNKNOWN") || answerSet.get(0).equals("UNSATISFIABLE") )
+		{
+			//System.out.println("No solution was found or time limit reached before a solution is found.");
+			return null;
+		}
+		System.out.println(answerSet);
+		return new Pair(buildPartitioning(answerSet,G,C), answerSet);
+	}
+	public Pair partitionFull() 
+	{
+		return partitionFull(rand.nextInt(Integer.MAX_VALUE));
+	}
+	class Pair
+	{
+		public Pair(GraphPartitioningState state, List<String> answerSet)
+		{
+			this.state = state;
+			this.answerSet = answerSet;
+		}
+		GraphPartitioningState state;
+		List<String> answerSet;
+	}
 	
 }

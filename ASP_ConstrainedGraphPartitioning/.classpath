@@ -14,6 +14,6 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
 	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/asp4j-master"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/asp4j-master2"/>
 	<classpathentry kind="output" path="bin/default"/>
 </classpath>

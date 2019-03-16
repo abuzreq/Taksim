@@ -363,6 +363,23 @@ public class GraphUtil
 	/**
 	 * 
 	 * @param graph
+	 * @param node
+	 * @return An array of nodes that are adjacent to the passed node in the graph
+	 */
+	public static Partition[] adjacentsOf(GraphPartitioningState graph, Partition node) 
+	{
+		
+		ArrayList<PartitionBorder> edges = new ArrayList<PartitionBorder>(graph.edgesOf(node));
+		Partition[] adjacents  = new Partition[edges.size()];
+		for(int i =0 ; i < edges.size();i++)
+		{
+			adjacents[i] = edges.get(i).getP1().equals(node)?edges.get(i).getP2():edges.get(i).getP1();
+		}
+		return adjacents;
+	}
+	/**
+	 * 
+	 * @param graph
 	 * @param par
 	 * @param node
 	 * @return an adjacent node to the passed node among the members of the partition (adjacency described by the graph)

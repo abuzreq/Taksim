@@ -154,8 +154,8 @@ public abstract class SolverBase implements Solver {
             sb.append(" ").append(inputFile.getAbsolutePath());
         }
         
-        System.out.println("CMD>> "+sb.toString() + extraParams);     
-        return sb.toString()+extraParams;
+        System.out.println("CMD "+".\\"+sb.toString()+extraParams);     
+        return "G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP\\clingo-4.5.4-win64\\"+sb.toString()+extraParams;
     }
 
     protected File tempInputFile() throws IOException {

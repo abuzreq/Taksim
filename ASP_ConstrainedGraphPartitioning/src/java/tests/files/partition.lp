@@ -29,8 +29,9 @@ contiguous(P) :-  partition(P),reach(N1,N2):family(N1,N2,P),node(N1), node(N2) .
 edge_q(P1,P2) :- partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2).
 
 
-count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
+%count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
 
+borders(P1,P2,N1,N2):- P1 != P2,edge(N1,N2),node(N1),node(N2),belongs(N1,P1),belongs(N2,P2),partition(P1),partition(P2),P1 != 0, P2 != 0.
 
 %count_borders(P1,P2,T):- T = T1+T2,T1 = #count{N1},T2 = #count{N2},P1 < P2,edge(N1,N2),node(N1),node(N2),belongs(N1,P1),belongs(N2,P2),partition(P1),partition(P2),P1 != 0, P2 != 0.
 %#minimize {(N1+N2)@1:partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2)}.

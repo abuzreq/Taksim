@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -164,11 +167,13 @@ public class TestsUtil
 				
 				int n = scan.nextInt();
 				int e = scan.nextInt();
+
+				
 				for(int i = 0 ; i < n;i++)
 					graph.addVertex(new Partition(i));
 				for(int i = 0 ; i < e;i++)
 				{
-					PartitionBorder b = new PartitionBorder(new Partition(scan.nextInt()),new Partition(scan.nextInt()));
+					PartitionBorder b = new PartitionBorder(new Partition(next(scan)),new Partition(next(scan)));
 					graph.addEdge(b.getP1(),b.getP2(),b);
 				}
 				graphs.add(graph);
@@ -178,6 +183,29 @@ public class TestsUtil
 			e1.printStackTrace();
 		}
 		return graphs;
+	}
+	private static Map<String,Integer> map = new HashMap<String, Integer>();
+	private static int counter = 0;
+	private static int next(Scanner scan)
+	{
+		int n = 0;
+		 try
+		 {
+			int x = scan.nextInt();
+			n = x;
+		 }
+		 catch(InputMismatchException ex)
+		 {
+			String str = scan.next();
+			if(!map.containsKey(str))
+			{
+				map.put(str, counter);
+				counter++;
+			}
+			n = map.get(str);
+		 }
+		 System.out.println(n);
+		 return n;
 	}
 	/**
 	 * Reads basic graphs from a file, the format of each graph is: <br/>

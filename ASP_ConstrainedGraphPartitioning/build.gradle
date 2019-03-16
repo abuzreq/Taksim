@@ -29,6 +29,7 @@ repositories {
 }
 
 dependencies {
+	compile "org.json:json:20180130"
 	compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.0.1'
    	compile group: 'com.googlecode.aima-java', name: 'aima-core', version: '3.0.0'
    	compile group: 'gov.nist.math', name: 'jama', version: '1.0.3'

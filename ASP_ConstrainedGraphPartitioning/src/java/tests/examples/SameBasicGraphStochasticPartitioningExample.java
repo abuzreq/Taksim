@@ -15,7 +15,7 @@ import util.TestsUtil;
 
 public class SameBasicGraphStochasticPartitioningExample {
 
-	static int sizeOfBasicGraph = 6;
+	static int sizeOfBasicGraph = 9;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
 	static int afterCoarseningSize = -1;
@@ -26,7 +26,8 @@ public class SameBasicGraphStochasticPartitioningExample {
 		//VoronoiGenerator generator = new VoronoiGenerator();
 		GridGenerator generator = new GridGenerator();
 		//Generating the constrain graph
-		final GraphPartitioningState C  = GraphUtil.generateChainGraph(5);
+		//final GraphPartitioningState C  = GraphUtil.generateChainGraph(5);
+		final GraphPartitioningState C = TestsUtil.readConstraintGraphs("G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\test_graphs\\zelda.in").get(0);
 		GraphPartitioningState result = null;
 		//Setting up the generator and generating the basic graph
 		//generator.setupGenerator(sizeOfBasicGraph, true, false, 500, 500, false, false, false);

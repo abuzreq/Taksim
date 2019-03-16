@@ -18,11 +18,11 @@ import util.GraphUtil;
 
 public class AStar_ASP_Test 
 {
-	static int gridDim = 9;
-	static int sizeMax = 40;
+	static int gridDim = 6;
+	static int sizeMax = 15;
 	static int sizeInc = 2;
-	static int sizeInit = 40;
-	static int numRuns = 1; 
+	static int sizeInit = 15;
+	static int numRuns = 100; 
 	static int afterCoarseningSize = -1;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(42);
@@ -43,9 +43,9 @@ public class AStar_ASP_Test
 			for(int i = 0; i < numRuns;i++)
 			{
 				long t = System.currentTimeMillis();
-				ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,0,1);
-				GraphPartitioningState result =	asp.partition();
-				//GraphPartitioningState result = ConstrainedGraphPartitioning.partitionConstrainedWithCoarseningAndRandomRestart(new SearchConfiguration(G, C),rand, 20, 50, afterCoarseningSize);
+				//ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,0,1);
+				//GraphPartitioningState result =	asp.partition();
+				GraphPartitioningState result = ConstrainedGraphPartitioning.partitionConstrainedWithCoarseningAndRandomRestart(new SearchConfiguration(G, C),rand, 50, 100, afterCoarseningSize);
 				if(result != null)
 					results.add(new RunResult(size,(System.currentTimeMillis() - t)));
 				else
