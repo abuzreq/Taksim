@@ -12,11 +12,19 @@ partition2(1..p).
 %n{belongs(N,P):partition(P),node(N)}n.  
 %:- belongs(N1,P1),belongs(N2,P2),N1==N2,P1!=P2,partition(P1),partition(P2),node(N1),node(N2).
 
+% X1!=X2, X1!=X3, X1!=X4, X2!=X3, X2!=X4, X3!=X4
 
 
+%linked(X1,X2):-edge(X1,X2);edge(X2,X1),X1<X2.
+
+%satisfied(X1,X2,X3,X4,P):- node(X1),node(X2),node(X3),node(X4), X1!=X2, X1!=X3, X1!=X4, X2!=X3, X2!=X4, X3!=X4
+%,partition(P),belongs(X1,P),belongs(X2,P),belongs(X3,P),belongs(X4,P),
+%edge(X1,X2),edge(X2,X3),edge(X3,X4),edge(X1,X4).
+%:- not satisfied(_,_,_,_,1).
+%:- not count(1,4).
 
 %N1 and N2 belong to the same partition
-family(N1,N2,P) :- belongs(N1,P),belongs(N2,P),partition(P), node(N1), node(N2),N1 < N2,not family(N2,N1,P).
+family(N1,N2,P) :- node(N1), node(N2), N1 < N2,partition(P),belongs(N1,P),belongs(N2,P),not family(N2,N1,P).
 
 
 reach(X,Y) :- edge(X,Y),family(X,Y,P),partition(P).
@@ -29,7 +37,7 @@ contiguous(P) :-  partition(P),reach(N1,N2):family(N1,N2,P),node(N1), node(N2) .
 edge_q(P1,P2) :- partition(P1),partition(P2),edge(N1,N2),P1 != P2,node(N1),node(N2),belongs(N1,P1),belongs(N2,P2).
 
 
-%count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
+count(P,T) :- T = #count{N:belongs(N,P),node(N)},partition(P).
 
 borders(P1,P2,N1,N2):- P1 != P2,edge(N1,N2),node(N1),node(N2),belongs(N1,P1),belongs(N2,P2),partition(P1),partition(P2),P1 != 0, P2 != 0.
 

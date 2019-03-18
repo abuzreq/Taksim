@@ -52,7 +52,8 @@ public class GridGenerator implements BasicGraphGenerator
 		{
 			for(int j = 0; j < dim ;j++)
 			{
-				int n = i + dim*j;
+				int n = i + dim* j;
+				System.out.println(n);
 				CellNode cn = (CellNode)nodes[n];
 				int x = i*cellDim;
 				int y = j*cellDim;

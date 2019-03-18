@@ -39,7 +39,7 @@ public class ASPTestGrid
 	static int sizeOfBasicGraph = 70;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
-	static int afterCoarseningSize = 70;//-1 for no coarsening
+	static int afterCoarseningSize = -1;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(12345);//
 	static int timeLimit = 0;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
@@ -68,7 +68,11 @@ public class ASPTestGrid
 			return par;
 		}};
 		
-	static private int dim = 14;		
+		/*
+		 G:\GitHub\ASP_ConstrainedGraphPartitioning\ASP\clingo-4.5.4-win64\clingo 1 --verbose=0 G:\GitHub\ASP_ConstrainedGraphPartitioning\ASP_ConstrainedGraphPartitioning\src\java\tests\files\partition.lp G:\GitHub\ASP_ConstrainedGraphPartitioning\ASP_ConstrainedGraphPartitioning\src\java\tests\files\node_constraints.lp G:\GitHub\ASP_ConstrainedGraphPartitioning\ASP_ConstrainedGraphPartitioning\src\java\tests\files\adjacency_constraints.lp G:\GitHub\ASP_ConstrainedGraphPartitioning\ASP_ConstrainedGraphPartitioning\src\java\tests\files\edges.lp G:\GitHub\ASP_ConstrainedGraphPartitioning\ASP_ConstrainedGraphPartitioning\src\java\tests\files\size_opt.lp --const n=49 --const p=8 --rand-freq=0.5 --const r=0 --time-limit=0 --seed=181956478
+		 
+		 */
+	static private int dim = 7;		
 	public static void main(String[] args) 
 	{
 		GridGenerator generator = new GridGenerator();
@@ -77,9 +81,9 @@ public class ASPTestGrid
 		//6, 21 nodes
 		//Generating the constraint graph
 		//final GraphPartitioningState C  =GraphUtil.generateChainGraph(5);//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
-		final GraphPartitioningState C = TestsUtil.readConstraintGraphs("G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\test_graphs\\tsmith.in").get(0);
+		final GraphPartitioningState C = getC();//TestsUtil.readConstraintGraphs("G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\test_graphs\\tsmith.in").get(0);
 		//System.out.println(C.getNamesMap());
-		/*
+		
 		Map<Integer,String> missionsNames = new HashMap<Integer,String>();
 		missionsNames.put(1, "start");
 		missionsNames.put(2, "fight");
@@ -90,13 +94,13 @@ public class ASPTestGrid
 		missionsNames.put(7, "boss");
 		missionsNames.put(8, "end");
 		C.setNamesMap(missionsNames);
-		 */
+		 
 		SimpleGraph<Node,Border> uncoarsenedG = null;
 		// Coarsening
 		if(afterCoarseningSize != -1)
 		{
 			uncoarsenedG = G;
-			G = GraphUtil.partitionToNodeGraph(GraphUtil.partition(G, afterCoarseningSize, PartitioningType.KMEANS_STOCHASTIC,rand,true));
+			G = GraphUtil.partitionToNodeGraph(GraphUtil.partition(G, afterCoarseningSize, PartitioningType.KERNEL_DETERMINISTIC,rand,true));
 		}
 				
 		System.out.println("# of Nodes = "+GraphUtil.sizeOf(G));
@@ -136,13 +140,14 @@ public class ASPTestGrid
 		int n =0 ;
 		while(pair == null)
 		{
-		 pair  = asp.partitionFull(12345);
-		 n++;
-		 if(n > 50)
-			 break;
+			pair  = asp.partitionFull();//12345
+			n++;
+			if(n > 50)
+				break;
 		}
 		GraphPartitioningState result = pair.state;
-		System.out.println(GraphUtil.getPartitions(result)[0].getMembers());
+		
+		System.out.println("\n\n"+GraphUtil.getPartitions(result)[0].getMembers());
 		generator.startDrawing(G,drawText);		
 		TestsUtil.colorizeRandom(result,Color.WHITE);
 		
@@ -150,12 +155,12 @@ public class ASPTestGrid
 		String basicGraphJson = toJSON(G,uncoarsenedG,dim,dim);	
 		String constraintGraphJson = toJSON(C,C.getNamesMap());
 		String partitionsJson =  getPartitionsJSON(result,C.getNamesMap(),uncoarsenedG==null?G:uncoarsenedG);
-		
+		/*
 		System.out.println(basicGraphJson);
 		System.out.println(constraintGraphJson);
 		System.out.println(bordersJson);
 		System.out.println(partitionsJson);
-		
+		*/
 	}
 
 	static OptType[] getOptTypes(int n,OptType type)
@@ -210,13 +215,11 @@ public class ASPTestGrid
 			removedPartitionObject.put("adjacentPartitions", new JSONArray());
 			arr.put(removedPartitionObject);
 		}
-		System.out.println(namesMap);
 		Partition[] partitions = GraphUtil.getPartitions(state);
 		for(int i = 0;i < numPartitions;i++)
 		{
 			JSONObject partitionObject = new JSONObject();
 			partitionObject.put("id", partitions[i].getNumber());// Partitions from asp approach start from 1 normally
-			System.out.println(partitions[i].getNumber()+ " "+namesMap.get(partitions[i].getNumber()-1));
 			partitionObject.put("type",namesMap.get(partitions[i].getNumber()-1));
 
 			ArrayList<Node> neighborsArr = getAllNeighborCells(partitions[i]);

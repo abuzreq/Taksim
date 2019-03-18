@@ -139,6 +139,12 @@ public class ASPConstrainedGraphPartitioning
 				sb.append(",");
 				sb.append(edges[i].getN2().getValue());
 				sb.append(").\n");
+				
+				sb.append("edge(");
+				sb.append(edges[i].getN2().getValue());
+				sb.append(",");
+				sb.append(edges[i].getN1().getValue());
+				sb.append(").\n");
 			}
 			fw.write(sb.toString());
 			fw.close();		
