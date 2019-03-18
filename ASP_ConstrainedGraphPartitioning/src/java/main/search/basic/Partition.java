@@ -164,6 +164,7 @@ public  class Partition
 		}
 		return cells;
 	}
+	
 	public Set<Node> getAllCellsSet()
 	{
 		Set<Node> cells = new HashSet<Node>();

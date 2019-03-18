@@ -1,6 +1,7 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -395,6 +396,16 @@ public class GraphUtil
 				return partitionMembers.get(i);
 		}
 		return null;
+	}
+	public static ArrayList<Node> adjacentsInMembersTo(SimpleGraph<Node, Border> graph, ArrayList<Node> partitionMembers, Node node)
+	{
+		ArrayList<Node> adjacents = new ArrayList<>();
+		for (int i = 0; i < partitionMembers.size(); i++) 
+		{
+			if (graph.containsEdge(partitionMembers.get(i), node))
+				adjacents.add(partitionMembers.get(i));
+		}
+		return adjacents;		
 	}
 	/**
 	 * 
@@ -860,5 +871,21 @@ public class GraphUtil
 			return o;
 		}
 		return null;
+	}
+
+	public static ArrayList<Node> getUncoursenedNodes(SimpleGraph<Node, Border> G)
+	{
+		ArrayList<Node> tmp = new ArrayList<>();
+		for(Node c : G.vertexSet())
+		{
+			ArrayList<Node> arr = c.getSelfOrCluster();
+			for(Node n : arr)
+			{
+				n.setContainer(c.getContainer());
+				tmp.add(n);
+			}
+			
+		}
+		return tmp;
 	}
 }

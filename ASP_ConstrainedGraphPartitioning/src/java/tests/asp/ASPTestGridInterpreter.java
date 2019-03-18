@@ -1,6 +1,10 @@
 package asp;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,9 +14,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import org.jgraph.JGraph;
 import org.jgrapht.EdgeFactory;
@@ -30,16 +38,17 @@ import search.basic.GraphPartitioningState;
 import search.basic.Node;
 import search.basic.Partition;
 import search.basic.PartitionBorder;
+import search.basic.PartitionNodePair;
 import search.enums.PartitioningType;
 import util.GraphUtil;
 import util.TestsUtil;
 import util.Util;
-public class ASPTestGrid 
+public class ASPTestGridInterpreter 
 {
 	static int sizeOfBasicGraph = 70;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
-	static int afterCoarseningSize = 70;//-1 for no coarsening
+	static int afterCoarseningSize = 100;//-1 for no coarsening
 	static boolean allowNodeRemoval = true;
 	static Random rand =  new Random(12345);//
 	static int timeLimit = 0;// 0 for no limit, allow enough time for at least one solution to be found, the extra time is to limit optimization
@@ -71,6 +80,7 @@ public class ASPTestGrid
 	static private int dim = 14;		
 	public static void main(String[] args) 
 	{
+	
 		GridGenerator generator = new GridGenerator();
 		generator.setupGenerator(50);
 		SimpleGraph<Node,Border> G = generator.generate(dim,rand);
@@ -78,75 +88,67 @@ public class ASPTestGrid
 		//Generating the constraint graph
 		//final GraphPartitioningState C  =GraphUtil.generateChainGraph(5);//getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
 		final GraphPartitioningState C = TestsUtil.readConstraintGraphs("G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\test_graphs\\tsmith.in").get(0);
-		//System.out.println(C.getNamesMap());
-		/*
-		Map<Integer,String> missionsNames = new HashMap<Integer,String>();
-		missionsNames.put(1, "start");
-		missionsNames.put(2, "fight");
-		missionsNames.put(3, "trap");
-		missionsNames.put(4, "loot");
-		missionsNames.put(5, "fight");
-		missionsNames.put(6, "puzzle");
-		missionsNames.put(7, "boss");
-		missionsNames.put(8, "end");
-		C.setNamesMap(missionsNames);
-		 */
-		SimpleGraph<Node,Border> uncoarsenedG = null;
-		// Coarsening
-		if(afterCoarseningSize != -1)
-		{
-			uncoarsenedG = G;
-			G = GraphUtil.partitionToNodeGraph(GraphUtil.partition(G, afterCoarseningSize, PartitioningType.KMEANS_STOCHASTIC,rand,true));
+		
+		String file = "G:\\GitHub\\ASP_ConstrainedGraphPartitioning\\ASP_ConstrainedGraphPartitioning\\src\\java\\tests\\files\\result.out";
+		List<String> answerSet = new LinkedList<String>();
+		Scanner scan = null;
+		try {
+			scan = new Scanner(new File(file));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-				
-		System.out.println("# of Nodes = "+GraphUtil.sizeOf(G));
-		System.out.println("# of Pars = "+GraphUtil.sizeOf(C));
-	
-
-		//Mapping constraint, transform G, then pass the node as a constraint
-		/*
-		Node[] nodes = GraphUtil.getNodes(G);
-		ArrayList<Node> start = new ArrayList<>();
-		start.add(nodes[0]);
-		start.add(nodes[1]);
-		start.add(nodes[2]);
-		
-		Object[] objs = groupNodes(G,start);
-		G = (SimpleGraph<Node, Border>) objs[0];
-		Node startNode = (Node) objs[1];
-		*/
-		
-		//Node Membership constraint
-		/*
-		Map<Integer,Integer> node2par = new HashMap<>();
-		node2par.put(startNode.getValue(), 1);
-		*/
-		
-		//Size Optimization
-		
-		int numPartitions = GraphUtil.sizeOf(C);
-		int[] pars = range(1,numPartitions);
-		OptType[] optTypesMax = getOptTypes(numPartitions,OptType.MAX);
-		OptType[] optTypesMin = getOptTypes(numPartitions,OptType.MIN);
-		int[] priorities = constant(numPartitions,1);
-		
-		
-		ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,timeLimit,numModels);//,pars,optTypesMin,priorities);
-		Pair pair = null;
-		int n =0 ;
-		while(pair == null)
+		List<String> allLines = new LinkedList<>();  
+		StringTokenizer tokenizer = new StringTokenizer(scan.nextLine(), " ");
+        while(tokenizer.hasMoreTokens())
+        {
+        	String line = tokenizer.nextToken().trim();
+        	//System.out.println(line);
+            if (line.startsWith("%") || line.startsWith("SATISFIABLE")) {
+                continue;
+            }
+            answerSet.add(line);
+        }
+        System.out.println(answerSet);
+        
+		GraphPartitioningState result = buildPartitioning(answerSet,G,C);
+		ArrayList<Node> cells =  GraphUtil.getNodesArrayList(G);
+		for(Partition p : result.vertexSet())
 		{
-		 pair  = asp.partitionFull(12345);
-		 n++;
-		 if(n > 50)
-			 break;
+			Color color =  new Color(rand.nextFloat(), rand.nextFloat(), rand.nextFloat(),1);
+			for(Node c : p.getAllCells())
+			{
+				for(Node n : cells)
+				{
+					if(c.getValue() == n.getValue())
+					{
+						CellNode cn = (CellNode)n;
+						cn.cell.color = color;
+						break;
+					}
+				}
+			}
+		}		
+		
+		for(Node c : result.getRemoved())
+		{
+			for(Node n : cells)
+			{
+				if(c.getValue() == n.getValue())
+				{
+					CellNode cn = (CellNode)n;
+					cn.cell.color = Color.WHITE;
+					break;
+				}
+			}
 		}
-		GraphPartitioningState result = pair.state;
-		System.out.println(GraphUtil.getPartitions(result)[0].getMembers());
-		generator.startDrawing(G,drawText);		
+		
+		
 		TestsUtil.colorizeRandom(result,Color.WHITE);
+		generator.startDrawing(G,drawText);		
 		
-		String bordersJson = getBordersJSON(pair.answerSet);
+		/*
+		SimpleGraph<Node,Border> uncoarsenedG  = G;
+		String bordersJson = getBordersJSON(answerSet);
 		String basicGraphJson = toJSON(G,uncoarsenedG,dim,dim);	
 		String constraintGraphJson = toJSON(C,C.getNamesMap());
 		String partitionsJson =  getPartitionsJSON(result,C.getNamesMap(),uncoarsenedG==null?G:uncoarsenedG);
@@ -155,9 +157,104 @@ public class ASPTestGrid
 		System.out.println(constraintGraphJson);
 		System.out.println(bordersJson);
 		System.out.println(partitionsJson);
-		
+		*/
 	}
+	static Map<Integer,Node> buildMapByValue(SimpleGraph<Node,Border> G)
+	{
+		Map<Integer,Node> map = new HashMap<>();
+		Node[] nodes = GraphUtil.getNodes(G);
+		for(int i =0; i < nodes.length;i++)
+		{
+			map.put(nodes[i].getValue(),nodes[i]);
+		}
+		return map;		
+	}
+	private static GraphPartitioningState buildPartitioning(List<String> answerSet, SimpleGraph<Node, Border> G, SimpleGraph<Partition,PartitionBorder> C) 
+	{
+		int numPartitions = GraphUtil.sizeOf(C);
+		Map<Integer,Node> map = buildMapByValue(G);
+		//Arrays.sort(nodes);		
+		GraphPartitioningState Q =  new GraphPartitioningState();
+		Partition[] pars = new Partition[numPartitions];
+		for(int i =0 ; i < pars.length;i++)
+		{
+			pars[i] = new Partition(i+1);
+ 		}
+		//System.out.println(answerSet);
+		ListIterator<String> it = answerSet.listIterator();
+		int num = 0;
+		while(it.hasNext())
+		{
+			String ans = it.next();
+			if(ans.startsWith("belongs"))
+			{
+				int in = ans.indexOf(",");
+				int left = ans.indexOf("(");
+				int right = ans.indexOf(")");
+				int nodeIndex = Integer.parseInt(ans.substring(left+1,in));
+				int parNumber = Integer.parseInt(ans.substring(in+1,right));
+				if(parNumber == 0)
+				{
+					Q.addToRemoved(map.get(nodeIndex));
+				}
+				else
+				{
+					pars[parNumber-1].addMember(map.get(nodeIndex));
+				}
+				num += 1;
+			}
+		}
+		for(int i =0 ; i < pars.length;i++)
+		{
+			Q.addVertex(pars[i]);
+		}
+		//GraphUtil.buildQuotientGraph(Q, G);
+		return Q;
+	}
+	public static void buildQuotientGraph(GraphPartitioningState quotientGraph, SimpleGraph<Node, Border> basicGraph) 
+	{
+		final Partition[] newPars = GraphUtil.getPartitions(quotientGraph);
+		for (int p = 0; p < newPars.length; p++) 
+		{		
+			// get all the borders of the members
+			TreeSet<Border> set = new TreeSet<Border>();
+			for (int m = 0; m < newPars[p].getMembers().size(); m++) {
+				set.addAll(basicGraph.edgesOf(newPars[p].getMembers().get(m)));
+			}
 
+			// find if any border starts and ends in two different partitions,
+			// if so ,add to the edges
+			Iterator<Border> it = set.iterator();
+			while (it.hasNext()) {
+				Border bor = it.next();
+				if (quotientGraph.removedContains(bor.getN1()) || quotientGraph.removedContains(bor.getN2()))
+					continue;
+				
+				PartitionNodePair pair1 = GraphUtil.findPartition(bor.getN1(), newPars);
+				PartitionNodePair pair2 = GraphUtil.findPartition(bor.getN2(), newPars);
+
+				if (!pair1.getContainer().equals(pair2.getContainer())) 
+				{
+					PartitionBorder parBorder = new PartitionBorder(pair1.getContainer(), pair2.getContainer());
+					quotientGraph.addEdge((Partition) parBorder.getP1(), (Partition) parBorder.getP2(), parBorder);
+					// /above we made sure the edge link two different
+					// partitions,
+					// /next we add the node to the neighbors if its container
+					// is not the partition
+					if (pair1.getContainer().equals(newPars[p])) {
+						pair2.getContainer().addNeighbor(pair1.getNode());
+						newPars[p].addNeighbor(pair2.getNode());
+					}
+					else // then newPars[p] is the container of getN2()
+					{
+						newPars[p].addNeighbor(pair1.getNode());
+						pair1.getContainer().addNeighbor(pair2.getNode());
+					}
+				}
+			}
+
+		}
+	}
 	static OptType[] getOptTypes(int n,OptType type)
 	{
 		OptType[] arr = new OptType[n];
