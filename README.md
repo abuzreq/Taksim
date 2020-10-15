@@ -31,4 +31,3 @@ By now you should have two projects in Eclipse: *ASP_ContrainedGraph_Partitionin
 The code should work fine now. You can run and experiment with the examples under: Taksim/ASP_ContrainedGraph_Partitioning/src/java/tests/  There are two folders there. The one called *examples* contains the A* implementaion examples. The one called *asp* contains the ASP examples. Note that the folder *files* has the actual Clingo constraints files. Our of these partition.lp is the main logic, while the others are computed based on what is provided from the examples.
 
 I am more than happy to help -as time allows- if you intend to use Taksim in a game, for research or simply tinkering around. 
-
