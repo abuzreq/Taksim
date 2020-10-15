@@ -58,10 +58,6 @@ public class ASPTest
 	static int timeLimit = 0;// 0 for no limit, allow enough time for atleast one solution to be found, the extra time is to limit optimization
 	static int numModels = 1;  //0 for finding the optimal model
 	
-	//TODO make sure you set this to the right path!
-	
-	
-	//"F:\Research\Discardable"
 	private final static String rulefile_edges = System.getProperty("user.dir") + "/src/java/tests/files/edges.lp";
 	private final static String rulefile_constraints = System.getProperty("user.dir") + "/src/java/tests/files/adjacency_constraints.lp";
 	private final static String rulefile_node_constraints = System.getProperty("user.dir") + "/src/java/tests/files/node_constraints.lp";
