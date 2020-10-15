@@ -844,4 +844,10 @@ public class GraphUtil
 		}
 		return null;
 	}
+
+	public static int numUnqualEdges(Set<PartitionBorder> edgeSet, Set<PartitionBorder> edgeSet2) 
+	{
+		// TODO Auto-generated method stub
+		return 0;
+	}
 }

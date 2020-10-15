@@ -18,14 +18,16 @@ import asp4j.program.Program;
  */
 public class SolverClingo extends SolverBase {
 
+	private String pathToSolver;
 	private int numModels;
-	public SolverClingo(int numModels)
+	public SolverClingo(int numModels, String pathToSolver)
 	{
+		this.pathToSolver = pathToSolver;
 		this.numModels = numModels;
 	}
     @Override
     protected String solverCommand() {
-        return "clingo "+numModels+" --verbose=0";
+        return this.pathToSolver+" "+numModels+" --verbose=0";
     }
 
     protected List<String> getAnswerSetStrings(Process exec) throws IOException {

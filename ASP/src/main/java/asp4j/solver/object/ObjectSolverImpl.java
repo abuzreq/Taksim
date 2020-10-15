@@ -99,7 +99,28 @@ public class ObjectSolverImpl implements ObjectSolver {
         }
         return builder.build();
     }
-
+    
+    /**
+     * 
+     * @param program
+     * @param binding
+     * @param filter [not used]
+     * @return
+     * @throws SolverException
+     */
+    private Program<Atom> getAtomProgram(Program<Object> program, Binding binding, Filter filter) throws SolverException {
+       
+    	ProgramBuilder<Atom> builder = new ProgramBuilder<>();
+        builder.addFiles(program.getFiles());
+        try {
+            for (Object input : program.getInput()) {
+                builder.add((Atom) binding.mapAsLangElem(input));
+            }
+        } catch (MappingException e) {
+            throw new SolverException(e);
+        }
+        return builder.build();
+    }
     private void prepareIO(Program<Object> program, Binding binding, Filter filter) throws SolverException {
         Set<Class<?>> inputClasses = new HashSet<>();
         for (Object object : program.getInput()) {

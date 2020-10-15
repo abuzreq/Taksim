@@ -30,12 +30,15 @@ import util.GraphUtil;
  */
 public class ASPConstrainedGraphPartitioning
 {
+	
+	static final String pathToSolver =  System.getProperty("user.dir") + "/solvers/clingo-5.3.0-win64/clingo";
+
 	private final static String rulefile_main = System.getProperty("user.dir") + "/src/java/tests/files/partition.lp";
 	private final static String rulefile_edges = System.getProperty("user.dir") + "/src/java/tests/files/edges.lp";
 	private final static String rulefile_adjacency_constraints = System.getProperty("user.dir") + "/src/java/tests/files/adjacency_constraints.lp";
 	private final static String rulefile_node_constraints = System.getProperty("user.dir") + "/src/java/tests/files/node_constraints.lp";
 	private final static String rulefile_partitions_size_opt = System.getProperty("user.dir") + "/src/java/tests/files/size_opt.lp";
-
+	
 	private String[] extraRuleFiles;
 	private boolean allowNodeRemoval;
 	private int timeLimit,numModels;
@@ -88,7 +91,7 @@ public class ASPConstrainedGraphPartitioning
 	private List<List<String>>  getAnswerSets(int seed, int num)
 	{
 		try {
-			return getAnswerSets(new SolverClingo(numModels), seed, rulefile_main,extraRuleFiles,num);
+			return getAnswerSets(new SolverClingo(numModels, pathToSolver), seed, rulefile_main,extraRuleFiles,num);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -97,7 +100,7 @@ public class ASPConstrainedGraphPartitioning
 	private List<String> getAnswerSet(int seed)
 	{
 		try {
-			return getAnswerSets(new SolverClingo(numModels), seed, rulefile_main,extraRuleFiles);
+			return getAnswerSets(new SolverClingo(numModels, pathToSolver), seed, rulefile_main,extraRuleFiles);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

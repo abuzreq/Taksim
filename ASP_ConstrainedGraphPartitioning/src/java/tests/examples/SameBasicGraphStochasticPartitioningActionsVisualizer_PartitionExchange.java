@@ -57,8 +57,8 @@ public class SameBasicGraphStochasticPartitioningActionsVisualizer_PartitionExch
 		
 		GraphPartitioningState Q = GraphUtil.partition(G, GraphUtil.sizeOf(C), PartitioningType.KERNEL_DETERMINISTIC, new Random(0), false);
 		System.out.println(C);
-		System.out.println("agaa "+GraphUtil.numUnqualEdges(C.edgeSet(), Q.edgeSet()));	
-		System.out.println("agaa "+GraphUtil.numUnqualEdges(C.edgeSet(), C.edgeSet()));	
+		//System.out.println("agaa "+GraphUtil.numUnqualEdges(C.edgeSet(), Q.edgeSet()));	
+		//System.out.println("agaa "+GraphUtil.numUnqualEdges(C.edgeSet(), C.edgeSet()));	
 		System.out.println(Q);
 		//System.exit(0);
 		sc.setActionsFunction( new ActionsFunction() {

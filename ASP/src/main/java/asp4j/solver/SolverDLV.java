@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 
+import asp4j.lang.AnswerSet;
+import asp4j.lang.Atom;
+import asp4j.program.Program;
+
 /**
  *
  * @author hbeck  Apr 14, 2013
@@ -48,4 +52,16 @@ public class SolverDLV extends SolverBase {
     protected String atomDelimiter() {
         return ", ";
     }
+
+	@Override
+	public List<AnswerSet<Atom>> getAnswerSets(Program<Atom> program) throws SolverException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected List<List<String>> getAnswerSetStrings(Process exec, int num) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

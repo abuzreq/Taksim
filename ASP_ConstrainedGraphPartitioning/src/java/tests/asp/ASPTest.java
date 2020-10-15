@@ -46,6 +46,9 @@ import util.GraphUtil;
 import util.TestsUtil;
 public class ASPTest 
 {
+	
+	
+	
 	static int sizeOfBasicGraph = 60;
 	static int initialLimitOnMaxNodesExpanded = 10;
 	static int increamentInLimit = 50;
@@ -55,6 +58,10 @@ public class ASPTest
 	static int timeLimit = 0;// 0 for no limit, allow enough time for atleast one solution to be found, the extra time is to limit optimization
 	static int numModels = 1;  //0 for finding the optimal model
 	
+	//TODO make sure you set this to the right path!
+	
+	
+	//"F:\Research\Discardable"
 	private final static String rulefile_edges = System.getProperty("user.dir") + "/src/java/tests/files/edges.lp";
 	private final static String rulefile_constraints = System.getProperty("user.dir") + "/src/java/tests/files/adjacency_constraints.lp";
 	private final static String rulefile_node_constraints = System.getProperty("user.dir") + "/src/java/tests/files/node_constraints.lp";
@@ -96,7 +103,7 @@ public class ASPTest
 			C.addEdge(pb.getP1(),pb.getP2(), pb);
 		}
 		String filePath = ""; 
-		C  =GraphUtil.generateChainGraph(10);// getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
+		C = GraphUtil.generateChainGraph(10);// getC();//TestsUtil.readConstraintGraphs(filePath).get(0);
 		
 		//Setting up the generator and generating the basic graph
 		generator.setupGenerator(sizeOfBasicGraph, true, false, 500, 500, false, false, false);

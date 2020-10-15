@@ -43,7 +43,7 @@ public class AStar_ASP_Test
 			for(int i = 0; i < numRuns;i++)
 			{
 				long t = System.currentTimeMillis();
-				ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,0,1);
+				ASPConstrainedGraphPartitioning asp = new ASPConstrainedGraphPartitioning(G,C,allowNodeRemoval,0,1, null);
 				GraphPartitioningState result =	asp.partition();
 				//GraphPartitioningState result = ConstrainedGraphPartitioning.partitionConstrainedWithCoarseningAndRandomRestart(new SearchConfiguration(G, C),rand, 20, 50, afterCoarseningSize);
 				if(result != null)
